@@ -1,0 +1,9 @@
+*.iml
+.idea/*
+.settings/
+.classpath
+.project
+dist/lib/*
+dist/bin/*.jar
+dist/doc
+target/*
