@@ -11,7 +11,7 @@
     </parent>
 
     <groupId>edu.cmu.courses</groupId>
-    <artifactId>simplemr-common</artifactId>
+    <artifactId>simplemr-mapreduce</artifactId>
     <version>1.0</version>
     <packaging>pom</packaging>
     <name>${artifactId}</name>
