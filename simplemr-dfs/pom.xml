@@ -14,10 +14,9 @@
     <artifactId>simplemr-dfs</artifactId>
     <version>1.0</version>
     <packaging>pom</packaging>
-    <name>${artifactId}</name>
+    <name>${project.artifactId}</name>
 
     <modules>
-        <module>dfs-common</module>
         <module>dfs-master</module>
         <module>dfs-slave</module>
     </modules>

@@ -13,11 +13,10 @@
     <groupId>edu.cmu.courses</groupId>
     <artifactId>simplemr-mapreduce</artifactId>
     <version>1.0</version>
-    <packaging>pom</packaging>
-    <name>${artifactId}</name>
+    <name>${project.artifactId}</name>
 
     <properties>
-        <project.root>${basedir}/..</project.root>
+        <project.root>${project.basedir}/..</project.root>
     </properties>
 
     <build>
@@ -60,4 +59,11 @@
             </plugin>
         </plugins>
     </build>
+    <dependencies>
+        <dependency>
+            <groupId>edu.cmu.courses</groupId>
+            <artifactId>simplemr-common</artifactId>
+            <version>1.0</version>
+        </dependency>
+    </dependencies>
 </project>

@@ -13,10 +13,10 @@
     <groupId>edu.cmu.courses</groupId>
     <artifactId>dfs-master</artifactId>
     <version>1.0</version>
-    <name>${artifactId}</name>
+    <name>${project.artifactId}</name>
 
     <properties>
-        <project.root>${basedir}/../..</project.root>
+        <project.root>${project.basedir}/../..</project.root>
     </properties>
 
     <build>
@@ -63,7 +63,7 @@
     <dependencies>
         <dependency>
             <groupId>edu.cmu.courses</groupId>
-            <artifactId>dfs-common</artifactId>
+            <artifactId>simplemr-common</artifactId>
             <version>1.0</version>
         </dependency>
     </dependencies>
