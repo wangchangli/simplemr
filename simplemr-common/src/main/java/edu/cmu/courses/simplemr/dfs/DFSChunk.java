@@ -55,12 +55,6 @@ public class DFSChunk implements Serializable, Comparable<DFSChunk> {
 
     @Override
     public int compareTo(DFSChunk dfsChunk) {
-        if(id == dfsChunk.getId()){
-            return 0;
-        } else if(id < dfsChunk.getId()){
-            return -1;
-        } else {
-            return 1;
-        }
+        return (int)(id - dfsChunk.getId());
     }
 }

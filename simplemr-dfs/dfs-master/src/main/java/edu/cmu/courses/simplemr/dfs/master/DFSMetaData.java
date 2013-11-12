@@ -1,7 +1,9 @@
 package edu.cmu.courses.simplemr.dfs.master;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.cmu.courses.simplemr.Constants;
 import edu.cmu.courses.simplemr.dfs.DFSChunk;
+import edu.cmu.courses.simplemr.dfs.DFSException;
 import edu.cmu.courses.simplemr.dfs.DFSFile;
 import edu.cmu.courses.simplemr.dfs.DFSNode;
 import org.slf4j.Logger;
@@ -12,6 +14,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class DFSMetaData {
     private static Logger LOG = LoggerFactory.getLogger(DFSMetaData.class);
@@ -21,17 +25,21 @@ public class DFSMetaData {
     private Map<Long, DFSFile> files;
     private Map<Long, DFSChunk> chunks;
     private EditLogger editLogger;
+    private DFSMaster master;
+    private ExecutorService gcPool;
 
-    public DFSMetaData(EditLogger editLogger){
+    public DFSMetaData(DFSMaster master, EditLogger editLogger){
         this.lock = "lock";
         this.dataNodes = new HashMap<String, DFSNode>();
         this.fileIndexes = new HashMap<String, Long>();
         this.files = new HashMap<Long, DFSFile>();
         this.chunks = new HashMap<Long, DFSChunk>();
         this.editLogger = editLogger;
+        this.master = master;
+        this.gcPool = Executors.newFixedThreadPool(Constants.DEFAULT_THREAD_POOL_SIZE);
     }
 
-    public void updateDataNode(String serviceName,  int chunkNumber, boolean writeLog){
+    public void updateDataNode(String serviceName,  int chunkNumber, long timestamp, boolean writeLog){
         DFSNode dataNode = null;
         synchronized (lock){
             if(dataNodes.containsKey(serviceName)){
@@ -47,7 +55,7 @@ public class DFSMetaData {
                 }
             }
             dataNode.setChunkNumber(chunkNumber);
-            dataNode.setTimestamp(System.currentTimeMillis());
+            dataNode.setTimestamp(timestamp);
         }
     }
 
@@ -67,12 +75,11 @@ public class DFSMetaData {
                 dispatchLog(EditOperation.DFS_CREATE_FILE, new Object[]{fileName, replicas});
             }
             if(fileIndexes.containsKey(fileName)){
-                file = files.get(fileIndexes.get(fileName));
-            } else {
-                file = new DFSFile(DFSFile.maxId.incrementAndGet(), fileName, replicas);
-                fileIndexes.put(fileName, file.getId());
-                files.put(file.getId(), file);
+                deleteFileWithGC(fileIndexes.get(fileName), writeLog);
             }
+            file = new DFSFile(DFSFile.maxId.incrementAndGet(), fileName, replicas);
+            fileIndexes.put(fileName, file.getId());
+            files.put(file.getId(), file);
         }
         return file;
     }
@@ -96,7 +103,8 @@ public class DFSMetaData {
         return fileArray;
     }
 
-    public DFSChunk createChunk(long fileId, int offset, int size, boolean writeLog){
+    public DFSChunk createChunk(long fileId, int offset, int size, boolean writeLog)
+            throws DFSException {
         DFSChunk chunk = null;
         synchronized (lock){
             if(writeLog){
@@ -105,10 +113,13 @@ public class DFSMetaData {
             if(files.containsKey(fileId)){
                 DFSFile file = files.get(fileId);
                 DFSNode[] dataNodes = allocateDataNodes(file.getReplicas());
-                if(dataNodes.length > 0){
-                    chunk = new DFSChunk(DFSChunk.maxId.incrementAndGet(), fileId, offset, size, dataNodes);
+                long chunkId = DFSChunk.maxId.incrementAndGet();
+                if(dataNodes.length >= file.getReplicas()){
+                    chunk = new DFSChunk(chunkId, fileId, offset, size, dataNodes);
                     file.addChunk(chunk);
                     chunks.put(chunk.getId(), chunk);
+                } else if(writeLog) {
+                    throw new DFSException("no enough data nodes");
                 }
             }
         }
@@ -121,13 +132,7 @@ public class DFSMetaData {
                 dispatchLog(EditOperation.DFS_DELETE_FILE, new Object[] {fileId});
             }
             if(files.containsKey(fileId)){
-                DFSFile file = files.get(fileId);
-                DFSChunk[] chunkArray = file.getChunks();
-                for(DFSChunk chunk : chunkArray){
-                    chunks.remove(chunk);
-                }
-                files.remove(fileId);
-                fileIndexes.remove(file.getName());
+                deleteFileWithGC(fileId, writeLog);
             }
         }
     }
@@ -144,7 +149,7 @@ public class DFSMetaData {
                 Object[] arguments = operation.getArguments();
                 switch(operation.getType()){
                     case EditOperation.UPDATE_DATA_NODE:
-                        updateDataNode((String)arguments[0], (Integer)arguments[1], false);
+                        updateDataNode((String)arguments[0], (Integer)arguments[1], 0, false);
                         break;
                     case EditOperation.REMOVE_DATA_NODE:
                         removeDataNode((String)arguments[0], false);
@@ -152,10 +157,11 @@ public class DFSMetaData {
                         createFile((String)arguments[0], (Integer)arguments[1], false);
                         break;
                     case EditOperation.DFS_DELETE_FILE:
-                        deleteFile((Long)arguments[0], false);
+                        deleteFile(Long.parseLong(arguments[0].toString()), false);
                         break;
                     case EditOperation.DFS_CREATE_CHUNK:
-                        createChunk((Long)arguments[0], (Integer)arguments[1], (Integer)arguments[2], false);
+                        createChunk(Long.parseLong(arguments[0].toString()), (Integer)arguments[1],
+                                    (Integer)arguments[2], false);
                         break;
                     default:
                         break;
@@ -186,10 +192,25 @@ public class DFSMetaData {
             }
         });
         for(int i = 0; i < replicas && i < allNodes.length; i++){
-            nodes.add(allNodes[i]);
+            if(allNodes[i].isValid()){
+                nodes.add(allNodes[i]);
+            }
         }
         results = new DFSNode[nodes.size()];
         nodes.toArray(results);
         return results;
+    }
+
+    private void deleteFileWithGC(long fileId, boolean gc){
+        DFSFile file = files.get(fileId);
+        DFSChunk[] chunkArray = file.getChunks();
+        for(DFSChunk chunk : chunkArray){
+            chunks.remove(chunk);
+            if(gc){
+                gcPool.execute(new DFSMasterGC(master.getRegistryHost(), master.getRegistryPort(), chunk));
+            }
+        }
+        files.remove(fileId);
+        fileIndexes.remove(file.getName());
     }
 }

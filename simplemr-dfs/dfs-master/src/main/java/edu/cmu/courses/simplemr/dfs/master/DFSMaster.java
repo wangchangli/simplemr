@@ -6,6 +6,7 @@ import edu.cmu.courses.simplemr.Constants;
 import edu.cmu.courses.simplemr.dfs.DFSConstants;
 import edu.cmu.courses.simplemr.dfs.DFSMasterService;
 
+import java.io.File;
 import java.io.IOException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -30,8 +31,11 @@ public class DFSMaster {
 
     public void start()
             throws IOException {
+        if(new File(editLogPath).isDirectory()){
+            throw new IllegalArgumentException("Log path should be a file, not directory");
+        }
         editLogger = new EditLogger(editLogPath);
-        metaData = new DFSMetaData(editLogger);
+        metaData = new DFSMetaData(this, editLogger);
         metaData.recoveryFromLog(editLogPath);
         service = new DFSMasterServiceImpl(metaData);
         registry = LocateRegistry.getRegistry(registryHost, registryPort);
@@ -40,6 +44,14 @@ public class DFSMaster {
 
     public boolean needHelp(){
         return help;
+    }
+
+    public String getRegistryHost(){
+        return registryHost;
+    }
+
+    public int getRegistryPort(){
+        return registryPort;
     }
 
     public static void main(String[] args) {

@@ -22,8 +22,7 @@ public class DFSMasterServiceImpl extends UnicastRemoteObject implements DFSMast
 
     @Override
     public void heartbeat(String serviceName, int chunkNumber) throws RemoteException {
-        LOG.info("heartbeat from " + serviceName + ", chunk number: " + chunkNumber);
-        metaData.updateDataNode(serviceName, chunkNumber, true);
+        metaData.updateDataNode(serviceName, chunkNumber, System.currentTimeMillis(), true);
     }
 
     @Override

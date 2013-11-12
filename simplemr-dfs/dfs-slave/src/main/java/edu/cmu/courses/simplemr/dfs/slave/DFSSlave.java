@@ -56,7 +56,7 @@ public class DFSSlave {
         registry.rebind(serviceName, slaveService);
         masterService = (DFSMasterService) registry.lookup(DFSMasterService.class.getCanonicalName());
         heartbeatService = Executors.newScheduledThreadPool(Constants.DEFAULT_SCHEDULED_THREAD_POOL_SIZE);
-        heartbeatService.scheduleAtFixedRate(new DFSSlaveHeartbeatWorker(this, masterService),
+        heartbeatService.scheduleAtFixedRate(new DFSSlaveHeartbeatWorker(this, registry),
                 0, heartbeatPeriod, TimeUnit.MILLISECONDS);
     }
 
@@ -77,10 +77,18 @@ public class DFSSlave {
 
     public void write(long chunkId, long offset, int size, byte[] data)
             throws IOException{
-        RandomAccessFile raf = new RandomAccessFile(getFilePath(chunkId), "rw");
+        File file = new File(getFilePath(chunkId));
+        RandomAccessFile raf = new RandomAccessFile(file, "rw");
         raf.seek(offset);
         raf.write(data, 0, Math.min(size, data.length));
         raf.close();
+    }
+
+    public void delete(long chunkId){
+        File file = new File(getFilePath(chunkId));
+        if(file.exists()){
+            file.delete();
+        }
     }
 
     public String getServiceName(){

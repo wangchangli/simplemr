@@ -9,6 +9,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class DFSClient {
@@ -30,7 +31,7 @@ public class DFSClient {
         masterService = (DFSMasterService)registry.lookup(DFSMasterService.class.getCanonicalName());
     }
 
-    public String[] listFiles(String fileName)
+    public String[] listFiles()
             throws RemoteException{
         DFSFile[] files = masterService.listFiles();
         String[] fileNames = new String[files.length];
@@ -85,7 +86,7 @@ public class DFSClient {
             int len = reader.read(data);
             if(len > 0){
                 DFSChunk chunk = createChunk(file.getId(), offset, len);
-                if(!(success = writeChunk(chunk, 0, len, data))){
+                if(chunk == null || !(success = writeChunk(chunk, 0, len, data))){
                     break;
                 }
                 offset += chunkSize;
@@ -130,19 +131,25 @@ public class DFSClient {
         return true;
     }
 
+    public void deleteFile(String fileName)
+            throws RemoteException{
+        File file = new File(fileName);
+        DFSFile dfsFile = getFile(file.getName());
+        if(dfsFile != null){
+            masterService.deleteFile(dfsFile.getId());
+        }
+    }
+
     private DFSFile createFile(String fileName, int replicas)
             throws RemoteException {
-        return masterService.createFile(fileName, replicas);
+        File file = new File(fileName);
+        return masterService.createFile(file.getName(), replicas);
     }
 
     private DFSFile getFile(String fileName)
             throws RemoteException{
-        return masterService.getFile(fileName);
-    }
-
-    private void deleteFile(long fileId)
-            throws RemoteException{
-        masterService.deleteFile(fileId);
+        File file = new File(fileName);
+        return masterService.getFile(file.getName());
     }
 
     private DFSChunk createChunk(long fileId, int offset, int size)

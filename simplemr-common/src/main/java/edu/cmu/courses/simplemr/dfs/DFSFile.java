@@ -1,6 +1,8 @@
 package edu.cmu.courses.simplemr.dfs;
 
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicLong;
@@ -39,6 +41,12 @@ public class DFSFile implements Serializable {
     public DFSChunk[] getChunks() {
         DFSChunk[] chunks = new DFSChunk[this.chunks.size()];
         this.chunks.toArray(chunks);
+        Arrays.sort(chunks, new Comparator<DFSChunk>() {
+            @Override
+            public int compare(DFSChunk dfsChunk, DFSChunk dfsChunk2) {
+                return dfsChunk.getOffset() - dfsChunk2.getOffset();
+            }
+        });
         return chunks;
     }
 

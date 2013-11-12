@@ -1,12 +1,16 @@
 package edu.cmu.courses.simplemr.dfs.slave;
 
 import edu.cmu.courses.simplemr.dfs.DFSSlaveService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
 public class DFSSlaveServiceImpl extends UnicastRemoteObject implements DFSSlaveService {
+
+    private static Logger LOG = LoggerFactory.getLogger(DFSSlaveServiceImpl.class);
 
     private DFSSlave slave;
 
@@ -31,5 +35,11 @@ public class DFSSlaveServiceImpl extends UnicastRemoteObject implements DFSSlave
         } catch (IOException e) {
             return false;
         }
+    }
+
+    @Override
+    public void delete(long chunkId) throws RemoteException {
+        LOG.info("delete chunk " + chunkId);
+        slave.delete(chunkId);
     }
 }

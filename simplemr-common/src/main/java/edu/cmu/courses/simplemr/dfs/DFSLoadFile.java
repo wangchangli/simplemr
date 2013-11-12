@@ -41,10 +41,14 @@ public class DFSLoadFile {
             throws IOException, NotBoundException {
         DFSClient dfsClient = new DFSClient(registryHost, registryPort);
         dfsClient.connect();
+        boolean success = false;
         if(isText){
-            dfsClient.writeText(fileNames.get(0), replicas, lineCount);
+            success = dfsClient.writeText(fileNames.get(0), replicas, lineCount);
         } else {
-            dfsClient.write(fileNames.get(0), replicas, blockSize);
+            success = dfsClient.write(fileNames.get(0), replicas, blockSize);
+        }
+        if(!success){
+            System.out.println("failed to write file");
         }
     }
 

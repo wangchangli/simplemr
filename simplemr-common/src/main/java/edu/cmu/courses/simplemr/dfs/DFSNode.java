@@ -1,8 +1,10 @@
 package edu.cmu.courses.simplemr.dfs;
 
+import edu.cmu.courses.simplemr.Constants;
+
 import java.io.Serializable;
 
-public class DFSNode implements Serializable {
+public class DFSNode implements Serializable, Comparable<DFSNode> {
     private String serviceName;
     private int chunkNumber;
     private long timestamp;
@@ -37,6 +39,10 @@ public class DFSNode implements Serializable {
         this.timestamp = timestamp;
     }
 
+    public boolean isValid(){
+        return System.currentTimeMillis() - timestamp < Constants.DEFAULT_HEARTBEAT_INVALID;
+    }
+
     @Override
     public String toString(){
         return serviceName;
@@ -54,5 +60,10 @@ public class DFSNode implements Serializable {
         } else {
             return false;
         }
+    }
+
+    @Override
+    public int compareTo(DFSNode dfsNode) {
+        return serviceName.hashCode() - dfsNode.getServiceName().hashCode();
     }
 }
