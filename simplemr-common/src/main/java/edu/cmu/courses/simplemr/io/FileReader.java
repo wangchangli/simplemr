@@ -9,7 +9,7 @@ public abstract class FileReader {
         this.fileBlock = fileBlock;
     }
 
-    public abstract void open() throws IOException;
+    public abstract void open() throws Exception;
     public abstract void close();
-    public abstract String readLine() throws IOException;
+    public abstract String readLine() throws Exception;
 }

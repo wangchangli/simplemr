@@ -9,7 +9,7 @@ public abstract class FileWriter {
         this.file = file;
     }
 
-    public abstract void open() throws IOException;
-    public abstract void close();
-    public abstract void writeLine(String line) throws IOException;
+    public abstract void open() throws Exception;
+    public abstract void close() throws Exception;
+    public abstract void writeLine(String line) throws Exception;
 }

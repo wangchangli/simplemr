@@ -11,11 +11,11 @@ public class DFSChunk implements Serializable, Comparable<DFSChunk> {
 
     private long id;
     private long fileId;
-    private int offset;
+    private long offset;
     private int size;
     private Set<DFSNode> nodes;
 
-    public DFSChunk(long id, long fileId, int offset, int size, DFSNode[] nodes){
+    public DFSChunk(long id, long fileId, long offset, int size, DFSNode[] nodes){
         this.id = id;
         this.fileId = fileId;
         this.offset = offset;
@@ -31,7 +31,7 @@ public class DFSChunk implements Serializable, Comparable<DFSChunk> {
         return fileId;
     }
 
-    public int getOffset() {
+    public long getOffset() {
         return offset;
     }
 
@@ -55,6 +55,18 @@ public class DFSChunk implements Serializable, Comparable<DFSChunk> {
 
     @Override
     public int compareTo(DFSChunk dfsChunk) {
-        return (int)(id - dfsChunk.getId());
+        if(id == dfsChunk.getId()){
+            if(offset > dfsChunk.getOffset()){
+                return 1;
+            } else if(offset < dfsChunk.getOffset()){
+                return -1;
+            } else {
+                return 0;
+            }
+        } else if(id > dfsChunk.getId()){
+            return 1;
+        } else {
+            return -1;
+        }
     }
 }

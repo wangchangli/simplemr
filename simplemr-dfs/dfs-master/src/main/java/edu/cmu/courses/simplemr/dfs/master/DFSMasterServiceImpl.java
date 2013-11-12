@@ -44,7 +44,7 @@ public class DFSMasterServiceImpl extends UnicastRemoteObject implements DFSMast
     }
 
     @Override
-    public DFSChunk createChunk(long fileId, int offset, int size) throws RemoteException {
+    public DFSChunk createChunk(long fileId, long offset, int size) throws RemoteException {
         LOG.info("create chunk for file " + fileId + ", offset " + offset + ", size " + size);
         return metaData.createChunk(fileId, offset, size, true);
     }

@@ -41,12 +41,7 @@ public class DFSFile implements Serializable {
     public DFSChunk[] getChunks() {
         DFSChunk[] chunks = new DFSChunk[this.chunks.size()];
         this.chunks.toArray(chunks);
-        Arrays.sort(chunks, new Comparator<DFSChunk>() {
-            @Override
-            public int compare(DFSChunk dfsChunk, DFSChunk dfsChunk2) {
-                return dfsChunk.getOffset() - dfsChunk2.getOffset();
-            }
-        });
+        Arrays.sort(chunks);
         return chunks;
     }
 

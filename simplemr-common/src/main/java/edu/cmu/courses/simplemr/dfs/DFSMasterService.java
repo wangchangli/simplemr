@@ -8,6 +8,6 @@ public interface DFSMasterService extends Remote {
     public DFSFile createFile(String fileName, int replicas) throws RemoteException;
     public DFSFile getFile(String fileName) throws RemoteException;
     public DFSFile[] listFiles() throws RemoteException;
-    public DFSChunk createChunk(long fileId, int offset, int size) throws RemoteException;
+    public DFSChunk createChunk(long fileId, long offset, int size) throws RemoteException;
     public void deleteFile(long fileId) throws RemoteException;
 }

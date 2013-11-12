@@ -8,9 +8,6 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public class DFSClient {
     private static Logger LOG = LoggerFactory.getLogger(DFSClient.class);
@@ -31,6 +28,17 @@ public class DFSClient {
         masterService = (DFSMasterService)registry.lookup(DFSMasterService.class.getCanonicalName());
     }
 
+    public DFSFile createFile(String fileName, int replicas)
+            throws RemoteException {
+        File file = new File(fileName);
+        return masterService.createFile(file.getName(), replicas);
+    }
+
+    public DFSChunk createChunk(long fileId, long offset, int size)
+            throws RemoteException{
+        return masterService.createChunk(fileId, offset, size);
+    }
+
     public String[] listFiles()
             throws RemoteException{
         DFSFile[] files = masterService.listFiles();
@@ -47,7 +55,7 @@ public class DFSClient {
         return masterService.getFile(file.getName());
     }
 
-    public byte[] readChunk(DFSChunk chunk, int offset, int size){
+    public byte[] readChunk(DFSChunk chunk, long offset, int size){
         DFSNode[] nodes = chunk.getNodes();
         for(DFSNode node : nodes){
             Exception e;
@@ -56,17 +64,31 @@ public class DFSClient {
             } catch (Exception exp){
                 e = exp;
             }
-            LOG.warn("can't read data from node " + node.getServiceName() + ", try next replica", e);
         }
         LOG.error("can't read data from any replica");
         return null;
+    }
+
+    public boolean writeChunk(DFSChunk chunk, long offset, int size, byte[] data){
+        DFSNode[] nodes = chunk.getNodes();
+        for(DFSNode node : nodes){
+            try{
+                if(!writeChunk(node, chunk.getId(), offset, size, data)){
+                    return false;
+                }
+            } catch (Exception e){
+                LOG.error("can't write data to node " + node.getServiceName(), e);
+                return false;
+            }
+        }
+        return true;
     }
 
     public boolean write(String fileName, int replicas, int chunkSize)
             throws IOException {
         FileInputStream reader = new FileInputStream(new File(fileName));
         DFSFile file = createFile(fileName, replicas);
-        int offset = 0;
+        long offset = 0;
         boolean success = true;
         byte[] data = new byte[chunkSize];
         while(true){
@@ -89,7 +111,7 @@ public class DFSClient {
             throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader(fileName));
         DFSFile file = createFile(fileName, replicas);
-        int offset = 0;
+        long offset = 0;
         int count = 0;
         StringBuffer sb = new StringBuffer();
         while(true){
@@ -127,39 +149,13 @@ public class DFSClient {
         }
     }
 
-    private DFSFile createFile(String fileName, int replicas)
-            throws RemoteException {
-        File file = new File(fileName);
-        return masterService.createFile(file.getName(), replicas);
-    }
-
-    private DFSChunk createChunk(long fileId, int offset, int size)
-            throws RemoteException{
-        return masterService.createChunk(fileId, offset, size);
-    }
-
-    private boolean writeChunk(DFSChunk chunk, int offset, int size, byte[] data){
-        DFSNode[] nodes = chunk.getNodes();
-        for(DFSNode node : nodes){
-            try{
-                if(!writeChunk(node, chunk.getId(), offset, size, data)){
-                    return false;
-                }
-            } catch (Exception e){
-                LOG.error("can't write data to node " + node.getServiceName(), e);
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private byte[] readChunk(DFSNode dataNode, long chunkId, int offset, int size)
+    private byte[] readChunk(DFSNode dataNode, long chunkId, long offset, int size)
             throws RemoteException, NotBoundException {
         DFSSlaveService slaveService = (DFSSlaveService) registry.lookup(dataNode.getServiceName());
         return slaveService.read(chunkId, offset, size);
     }
 
-    private boolean writeChunk(DFSNode dataNode, long chunkId, int offset, int size, byte[] data)
+    private boolean writeChunk(DFSNode dataNode, long chunkId, long offset, int size, byte[] data)
             throws RemoteException, NotBoundException {
         DFSSlaveService slaveService = (DFSSlaveService) registry.lookup(dataNode.getServiceName());
         return slaveService.write(chunkId, offset, size, data);

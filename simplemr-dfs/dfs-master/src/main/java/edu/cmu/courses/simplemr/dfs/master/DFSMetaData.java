@@ -103,7 +103,7 @@ public class DFSMetaData {
         return fileArray;
     }
 
-    public DFSChunk createChunk(long fileId, int offset, int size, boolean writeLog) {
+    public DFSChunk createChunk(long fileId, long offset, int size, boolean writeLog) {
         DFSChunk chunk = null;
         synchronized (lock){
             if(writeLog){
@@ -155,7 +155,7 @@ public class DFSMetaData {
                         deleteFile(Long.parseLong(arguments[0].toString()), false);
                         break;
                     case EditOperation.DFS_CREATE_CHUNK:
-                        createChunk(Long.parseLong(arguments[0].toString()), (Integer)arguments[1],
+                        createChunk(Long.parseLong(arguments[0].toString()), Long.parseLong(arguments[1].toString()),
                                     (Integer)arguments[2], false);
                         break;
                     default:
