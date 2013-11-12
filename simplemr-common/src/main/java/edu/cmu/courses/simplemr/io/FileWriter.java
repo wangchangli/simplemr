@@ -1,4 +1,4 @@
-package edu.cmu.courses.simplemr.mapreduce.io;
+package edu.cmu.courses.simplemr.io;
 
 import java.io.IOException;
 

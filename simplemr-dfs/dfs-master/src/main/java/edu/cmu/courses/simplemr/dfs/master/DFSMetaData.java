@@ -1,11 +1,15 @@
 package edu.cmu.courses.simplemr.dfs.master;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.cmu.courses.simplemr.dfs.DFSChunk;
 import edu.cmu.courses.simplemr.dfs.DFSFile;
 import edu.cmu.courses.simplemr.dfs.DFSNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 
@@ -27,18 +31,20 @@ public class DFSMetaData {
         this.editLogger = editLogger;
     }
 
-    public void updateDataNode(String host, int dataPort,  int chunkNumber, boolean writeLog){
-        String serviceName = DFSNode.convertServiceName(host, dataPort);
+    public void updateDataNode(String serviceName,  int chunkNumber, boolean writeLog){
         DFSNode dataNode = null;
         synchronized (lock){
-            if(writeLog){
-                dispatchLog(EditOperation.UPDATE_DATA_NODE, new Object[] {host, dataPort, chunkNumber});
-            }
             if(dataNodes.containsKey(serviceName)){
                 dataNode = dataNodes.get(serviceName);
+                if(dataNode.getChunkNumber() != chunkNumber && writeLog){
+                    dispatchLog(EditOperation.UPDATE_DATA_NODE, new Object[] {serviceName, chunkNumber});
+                }
             } else {
-                dataNode = new DFSNode(host, dataPort);
+                dataNode = new DFSNode(serviceName);
                 dataNodes.put(serviceName, dataNode);
+                if(writeLog){
+                    dispatchLog(EditOperation.UPDATE_DATA_NODE, new Object[] {serviceName, chunkNumber});
+                }
             }
             dataNode.setChunkNumber(chunkNumber);
             dataNode.setTimestamp(System.currentTimeMillis());
@@ -90,18 +96,18 @@ public class DFSMetaData {
         return fileArray;
     }
 
-    public DFSChunk createChunk(long fileId, long offset, long size, boolean writeLog){
+    public DFSChunk createChunk(long fileId, int offset, int size, boolean writeLog){
         DFSChunk chunk = null;
         synchronized (lock){
             if(writeLog){
                 dispatchLog(EditOperation.DFS_CREATE_CHUNK, new Object[] {fileId, offset, size});
             }
-            if(fileIndexes.containsKey(fileId)){
-                DFSFile file = files.get(fileIndexes.get(fileId));
+            if(files.containsKey(fileId)){
+                DFSFile file = files.get(fileId);
                 DFSNode[] dataNodes = allocateDataNodes(file.getReplicas());
                 if(dataNodes.length > 0){
                     chunk = new DFSChunk(DFSChunk.maxId.incrementAndGet(), fileId, offset, size, dataNodes);
-                    file.addChunkId(chunk.getId());
+                    file.addChunk(chunk);
                     chunks.put(chunk.getId(), chunk);
                 }
             }
@@ -114,15 +120,48 @@ public class DFSMetaData {
             if(writeLog){
                 dispatchLog(EditOperation.DFS_DELETE_FILE, new Object[] {fileId});
             }
-            if(fileIndexes.containsKey(fileId)){
-                DFSFile file = files.get(fileIndexes.get(fileId));
-                Long[] chunkIds = file.getChunkIds();
-                for(Long chunkId : chunkIds){
-                    chunks.remove(chunkId);
+            if(files.containsKey(fileId)){
+                DFSFile file = files.get(fileId);
+                DFSChunk[] chunkArray = file.getChunks();
+                for(DFSChunk chunk : chunkArray){
+                    chunks.remove(chunk);
                 }
                 files.remove(fileId);
                 fileIndexes.remove(file.getName());
             }
+        }
+    }
+
+    public void recoveryFromLog(String logPath)
+            throws IOException{
+        File file = new File(logPath);
+        if(file.exists()){
+            BufferedReader reader = new BufferedReader(new FileReader(file));
+            String line = null;
+            ObjectMapper mapper = new ObjectMapper();
+            while((line = reader.readLine()) != null){
+                EditOperation operation = mapper.readValue(line, EditOperation.class);
+                Object[] arguments = operation.getArguments();
+                switch(operation.getType()){
+                    case EditOperation.UPDATE_DATA_NODE:
+                        updateDataNode((String)arguments[0], (Integer)arguments[1], false);
+                        break;
+                    case EditOperation.REMOVE_DATA_NODE:
+                        removeDataNode((String)arguments[0], false);
+                    case EditOperation.DFS_CREATE_FILE:
+                        createFile((String)arguments[0], (Integer)arguments[1], false);
+                        break;
+                    case EditOperation.DFS_DELETE_FILE:
+                        deleteFile((Long)arguments[0], false);
+                        break;
+                    case EditOperation.DFS_CREATE_CHUNK:
+                        createChunk((Long)arguments[0], (Integer)arguments[1], (Integer)arguments[2], false);
+                        break;
+                    default:
+                        break;
+                }
+            }
+            reader.close();
         }
     }
 

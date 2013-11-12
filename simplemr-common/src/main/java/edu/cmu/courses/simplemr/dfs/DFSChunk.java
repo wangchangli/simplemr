@@ -6,16 +6,16 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class DFSChunk implements Serializable {
+public class DFSChunk implements Serializable, Comparable<DFSChunk> {
     public static AtomicLong maxId = new AtomicLong(0);
 
     private long id;
     private long fileId;
-    private long offset;
-    private long size;
+    private int offset;
+    private int size;
     private Set<DFSNode> nodes;
 
-    public DFSChunk(long id, long fileId, long offset, long size, DFSNode[] nodes){
+    public DFSChunk(long id, long fileId, int offset, int size, DFSNode[] nodes){
         this.id = id;
         this.fileId = fileId;
         this.offset = offset;
@@ -31,11 +31,11 @@ public class DFSChunk implements Serializable {
         return fileId;
     }
 
-    public long getOffset() {
+    public int getOffset() {
         return offset;
     }
 
-    public long getSize() {
+    public int getSize() {
         return size;
     }
 
@@ -51,5 +51,16 @@ public class DFSChunk implements Serializable {
         DFSNode[] nodesArray = new DFSNode[nodes.size()];
         nodes.toArray(nodesArray);
         return nodesArray;
+    }
+
+    @Override
+    public int compareTo(DFSChunk dfsChunk) {
+        if(id == dfsChunk.getId()){
+            return 0;
+        } else if(id < dfsChunk.getId()){
+            return -1;
+        } else {
+            return 1;
+        }
     }
 }

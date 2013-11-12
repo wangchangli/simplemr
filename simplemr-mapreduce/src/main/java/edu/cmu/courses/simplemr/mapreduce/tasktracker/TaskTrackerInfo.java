@@ -1,6 +1,6 @@
 package edu.cmu.courses.simplemr.mapreduce.tasktracker;
 
-import edu.cmu.courses.simplemr.mapreduce.common.Constants;
+import edu.cmu.courses.simplemr.Constants;
 import edu.cmu.courses.simplemr.mapreduce.task.Task;
 
 import java.io.Serializable;
@@ -18,7 +18,7 @@ public class TaskTrackerInfo implements Serializable{
     private List<Task> tasks;
 
     public TaskTrackerInfo(String host, int port, String mapperOutputDir){
-        this(host, port, mapperOutputDir, Constants.HEARTBEAT_INVALID);
+        this(host, port, mapperOutputDir, Constants.DEFAULT_HEARTBEAT_INVALID);
     }
 
     public TaskTrackerInfo(String host, int port, String mapperOutputDir, long invalidPeriod){

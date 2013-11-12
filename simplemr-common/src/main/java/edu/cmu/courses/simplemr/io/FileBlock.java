@@ -1,4 +1,4 @@
-package edu.cmu.courses.simplemr.mapreduce.io;
+package edu.cmu.courses.simplemr.io;
 
 public class FileBlock {
     private String file;

@@ -1,0 +1,5 @@
+#!/bin/bash
+
+base=`dirname $0`/..
+export CLASSPATH=$base/lib/simplemr-common-1.0.jar:$CLASSPATH 
+rmiregistry $@

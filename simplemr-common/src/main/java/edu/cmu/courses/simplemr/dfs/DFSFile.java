@@ -10,7 +10,7 @@ public class DFSFile implements Serializable {
 
     private long id;
     private String name;
-    private Set<Long> chunkIds;
+    private Set<DFSChunk> chunks;
     private int replicas;
 
     public DFSFile(long id, String name){
@@ -19,7 +19,7 @@ public class DFSFile implements Serializable {
 
     public DFSFile(long id, String name, int replicas){
         this.id = id;
-        this.chunkIds = new TreeSet<Long>();
+        this.chunks = new TreeSet<DFSChunk>();
         setName(name);
         setReplicas(replicas);
     }
@@ -36,18 +36,18 @@ public class DFSFile implements Serializable {
         this.name = name;
     }
 
-    public Long[] getChunkIds() {
-        Long[] ids = new Long[chunkIds.size()];
-        chunkIds.toArray(ids);
-        return ids;
+    public DFSChunk[] getChunks() {
+        DFSChunk[] chunks = new DFSChunk[this.chunks.size()];
+        this.chunks.toArray(chunks);
+        return chunks;
     }
 
-    public void addChunkId(long chunkId){
-        chunkIds.add(chunkId);
+    public void addChunk(DFSChunk chunk){
+        chunks.add(chunk);
     }
 
-    public void removeChunkId(long chunkId){
-        chunkIds.remove(chunkId);
+    public void removeChunkId(DFSChunk chunk){
+        chunks.remove(chunk);
     }
 
     public int getReplicas() {

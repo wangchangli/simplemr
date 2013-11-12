@@ -4,26 +4,10 @@ import java.io.Serializable;
 
 public class DFSNode implements Serializable {
     private String serviceName;
-    private String host;
-    private int dataPort;
     private int chunkNumber;
     private long timestamp;
 
     public DFSNode(String serviceName){
-        this(serviceName, null, -1);
-    }
-
-    public DFSNode(String host, int dataPort){
-        this(convertServiceName(host, dataPort), host, dataPort);
-    }
-
-    public DFSNode(String serviceName, String host, int dataPort){
-        if(dataPort <= 0){
-            this.dataPort = DFSConstants.DEFAULT_DATA_PORT;
-        } else {
-            this.dataPort = dataPort;
-        }
-        this.host = host;
         this.serviceName = serviceName;
         this.timestamp = 0;
         this.chunkNumber = 0;
@@ -31,14 +15,6 @@ public class DFSNode implements Serializable {
 
     public String getServiceName() {
         return serviceName;
-    }
-
-    public String getHost() {
-        return host;
-    }
-
-    public int getDataPort() {
-        return dataPort;
     }
 
     public int getChunkNumber(){

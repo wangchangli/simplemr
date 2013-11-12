@@ -1,6 +1,6 @@
 package edu.cmu.courses.simplemr.mapreduce.jobtracker;
 
-import edu.cmu.courses.simplemr.mapreduce.common.Constants;
+import edu.cmu.courses.simplemr.Constants;
 import edu.cmu.courses.simplemr.mapreduce.task.Task;
 import edu.cmu.courses.simplemr.mapreduce.task.TaskStatus;
 import org.slf4j.Logger;
