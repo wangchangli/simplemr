@@ -41,38 +41,25 @@ public class DFSClient {
         return fileNames;
     }
 
-    public byte[] read(String fileName, int offset, int size)
-            throws RemoteException {
-        DFSFile file = getFile(fileName);
-        if(file == null){
-            return null;
-        }
-        List<Byte> data = new ArrayList<Byte>();
-        for(DFSChunk chunk : file.getChunks()){
-            if((offset >= chunk.getOffset() && offset < chunk.getOffset() + chunk.getSize()) ||
-               (offset + size > chunk.getOffset() && offset <= chunk.getOffset() + chunk.getSize())){
-                int chunkOffset = Math.max(offset, chunk.getOffset());
-                int chunkSize = Math.min(offset + size, chunk.getOffset() + chunk.getSize()) - chunkOffset;
-                byte[] chunkData = readChunk(chunk, chunkOffset, chunkSize);
-                if(chunkData == null){
-                    break;
-                }
-                for(byte b : chunkData){
-                    data.add(b);
-                }
+    public DFSFile getFile(String fileName)
+            throws RemoteException{
+        File file = new File(fileName);
+        return masterService.getFile(file.getName());
+    }
+
+    public byte[] readChunk(DFSChunk chunk, int offset, int size){
+        DFSNode[] nodes = chunk.getNodes();
+        for(DFSNode node : nodes){
+            Exception e;
+            try{
+                return readChunk(node, chunk.getId(), offset, size);
+            } catch (Exception exp){
+                e = exp;
             }
-            if(offset + size <= chunk.getOffset()){
-                break;
-            }
+            LOG.warn("can't read data from node " + node.getServiceName() + ", try next replica", e);
         }
-        if(data.size() == 0){
-            return null;
-        }
-        byte[] dataArray = new byte[data.size()];
-        for(int i = 0; i < data.size(); i++){
-            dataArray[i] = data.get(i);
-        }
-        return dataArray;
+        LOG.error("can't read data from any replica");
+        return null;
     }
 
     public boolean write(String fileName, int replicas, int chunkSize)
@@ -146,30 +133,9 @@ public class DFSClient {
         return masterService.createFile(file.getName(), replicas);
     }
 
-    private DFSFile getFile(String fileName)
-            throws RemoteException{
-        File file = new File(fileName);
-        return masterService.getFile(file.getName());
-    }
-
     private DFSChunk createChunk(long fileId, int offset, int size)
             throws RemoteException{
         return masterService.createChunk(fileId, offset, size);
-    }
-
-    private byte[] readChunk(DFSChunk chunk, int offset, int size){
-        DFSNode[] nodes = chunk.getNodes();
-        for(DFSNode node : nodes){
-            Exception e;
-            try{
-                return readChunk(node, chunk.getId(), offset, size);
-            } catch (Exception exp){
-                e = exp;
-            }
-            LOG.warn("can't read data from node " + node.getServiceName() + ", try next replica", e);
-        }
-        LOG.error("can't read data from any replica");
-        return null;
     }
 
     private boolean writeChunk(DFSChunk chunk, int offset, int size, byte[] data){

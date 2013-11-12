@@ -67,9 +67,14 @@ public class DFSSlave {
             RandomAccessFile raf = new RandomAccessFile(file, "r");
             raf.seek(offset);
             byte[] buffer = new byte[size];
-            byte[] data = Arrays.copyOf(buffer, raf.read(buffer, 0, size));
-            raf.close();
-            return data;
+            int len = raf.read(buffer, 0, size);
+            if(len > 0){
+                byte[] data = Arrays.copyOf(buffer, len);
+                raf.close();
+                return data;
+            } else {
+                return null;
+            }
         } else {
             return null;
         }

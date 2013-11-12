@@ -103,8 +103,7 @@ public class DFSMetaData {
         return fileArray;
     }
 
-    public DFSChunk createChunk(long fileId, int offset, int size, boolean writeLog)
-            throws DFSException {
+    public DFSChunk createChunk(long fileId, int offset, int size, boolean writeLog) {
         DFSChunk chunk = null;
         synchronized (lock){
             if(writeLog){
@@ -114,13 +113,9 @@ public class DFSMetaData {
                 DFSFile file = files.get(fileId);
                 DFSNode[] dataNodes = allocateDataNodes(file.getReplicas());
                 long chunkId = DFSChunk.maxId.incrementAndGet();
-                if(dataNodes.length >= file.getReplicas()){
-                    chunk = new DFSChunk(chunkId, fileId, offset, size, dataNodes);
-                    file.addChunk(chunk);
-                    chunks.put(chunk.getId(), chunk);
-                } else if(writeLog) {
-                    throw new DFSException("no enough data nodes");
-                }
+                chunk = new DFSChunk(chunkId, fileId, offset, size, dataNodes);
+                file.addChunk(chunk);
+                chunks.put(chunk.getId(), chunk);
             }
         }
         return chunk;
@@ -149,7 +144,7 @@ public class DFSMetaData {
                 Object[] arguments = operation.getArguments();
                 switch(operation.getType()){
                     case EditOperation.UPDATE_DATA_NODE:
-                        updateDataNode((String)arguments[0], (Integer)arguments[1], 0, false);
+                        updateDataNode((String)arguments[0], (Integer)arguments[1], System.currentTimeMillis(), false);
                         break;
                     case EditOperation.REMOVE_DATA_NODE:
                         removeDataNode((String)arguments[0], false);
