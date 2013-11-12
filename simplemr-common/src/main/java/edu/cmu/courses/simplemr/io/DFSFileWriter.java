@@ -56,7 +56,7 @@ public class DFSFileWriter extends FileWriter {
             if(chunk == null){
                 throw new IOException("can't allocate new chunk");
             }
-            if(dfsClient.writeChunk(chunk, 0, size, lineBuffer.toString().getBytes())){
+            if(!dfsClient.writeChunk(chunk, 0, size, lineBuffer.toString().getBytes())){
                 throw new IOException("can't write chunk");
             }
             lineBuffer.delete(0, size);
