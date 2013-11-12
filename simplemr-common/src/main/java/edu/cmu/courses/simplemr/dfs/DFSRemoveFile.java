@@ -35,6 +35,7 @@ public class DFSRemoveFile {
     public static void main(String[] args) throws RemoteException, NotBoundException {
         DFSRemoveFile removeFile = new DFSRemoveFile();
         JCommander commander = new JCommander(removeFile, args);
+        commander.setProgramName("dfs-rm");
         if(removeFile.needHelp()){
             commander.usage();
         } else {

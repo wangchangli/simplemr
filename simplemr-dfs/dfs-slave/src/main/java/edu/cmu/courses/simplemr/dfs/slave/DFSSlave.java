@@ -116,6 +116,7 @@ public class DFSSlave {
     public static void main(String[] args) {
         DFSSlave slave = new DFSSlave();
         JCommander commander = new JCommander(slave, args);
+        commander.setProgramName("dfs-slave");
         if(slave.needHelp()){
             commander.usage();
         } else {

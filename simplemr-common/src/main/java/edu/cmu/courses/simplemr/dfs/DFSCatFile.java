@@ -46,6 +46,7 @@ public class DFSCatFile {
             throws RemoteException, NotBoundException {
         DFSCatFile catFile = new DFSCatFile();
         JCommander commander = new JCommander(catFile, args);
+        commander.setProgramName("dfs-cat");
         if(catFile.needHelp()){
             commander.usage();
         } else {

@@ -57,6 +57,7 @@ public class DFSMaster {
     public static void main(String[] args) {
         DFSMaster master = new DFSMaster();
         JCommander commander = new JCommander(master, args);
+        commander.setProgramName("dfs-master");
         if(master.needHelp()){
             commander.usage();
         } else {
