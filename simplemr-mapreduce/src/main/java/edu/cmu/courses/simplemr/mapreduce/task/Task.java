@@ -11,6 +11,9 @@ public abstract class Task implements Serializable, Comparable<Task>{
     protected TaskStatus status;
     protected TaskTrackerInfo taskTrackerInfo;
     protected int attemptCount;
+    protected int mapperNum;
+    protected int reducerNum;
+
 
     public Task(int taskId, int jobId, TaskType type){
         setTaskId(taskId);
@@ -19,6 +22,22 @@ public abstract class Task implements Serializable, Comparable<Task>{
         setStatus(TaskStatus.INITIALIZING);
         setTaskTrackerInfo(null);
         attemptCount = 0;
+    }
+
+    public void setReducerNum(int reducerNum) {
+        this.reducerNum =  reducerNum;
+    }
+
+    public int getReducerNum() {
+        return mapperNum;
+    }
+
+    public void setMapperNum(int mapperNum) {
+        this.mapperNum = mapperNum;
+    }
+
+    public int getMapperNum() {
+        return mapperNum;
     }
 
     @Override
