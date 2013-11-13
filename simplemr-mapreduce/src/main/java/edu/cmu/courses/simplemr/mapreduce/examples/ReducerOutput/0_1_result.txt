@@ -1,3 +1,0 @@
-banana 6
-fda 2
-oriange 4

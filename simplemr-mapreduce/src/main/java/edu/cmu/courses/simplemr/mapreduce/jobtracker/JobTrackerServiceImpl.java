@@ -1,5 +1,6 @@
 package edu.cmu.courses.simplemr.mapreduce.jobtracker;
 
+import edu.cmu.courses.simplemr.mapreduce.JobTrackerService;
 import edu.cmu.courses.simplemr.mapreduce.common.JobConfig;
 import edu.cmu.courses.simplemr.mapreduce.tasktracker.TaskTrackerInfo;
 

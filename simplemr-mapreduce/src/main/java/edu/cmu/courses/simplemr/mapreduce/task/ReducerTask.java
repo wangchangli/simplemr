@@ -1,7 +1,5 @@
 package edu.cmu.courses.simplemr.mapreduce.task;
 
-import java.util.List;
-
 public class ReducerTask extends Task {
 
     private String outputFilePrefix;

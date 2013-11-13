@@ -1,5 +1,5 @@
 
-package edu.cmu.courses.simplemr.io;
+package edu.cmu.courses.simplemr.mapreduce.io;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;

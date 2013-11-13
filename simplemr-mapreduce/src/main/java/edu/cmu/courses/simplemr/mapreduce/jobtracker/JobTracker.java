@@ -1,13 +1,14 @@
 package edu.cmu.courses.simplemr.mapreduce.jobtracker;
 
 import edu.cmu.courses.simplemr.Constants;
+import edu.cmu.courses.simplemr.mapreduce.JobTrackerService;
 import edu.cmu.courses.simplemr.mapreduce.common.JobConfig;
 import edu.cmu.courses.simplemr.mapreduce.task.MapperTask;
 import edu.cmu.courses.simplemr.mapreduce.task.ReducerTask;
 import edu.cmu.courses.simplemr.mapreduce.task.Task;
 import edu.cmu.courses.simplemr.mapreduce.task.TaskStatus;
 import edu.cmu.courses.simplemr.mapreduce.tasktracker.TaskTrackerInfo;
-import edu.cmu.courses.simplemr.mapreduce.tasktracker.TaskTrackerService;
+import edu.cmu.courses.simplemr.mapreduce.TaskTrackerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,4 +1,0 @@
-apple 4
-fdas 8
-fdasfdsa 2
-watermelon 4

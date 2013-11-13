@@ -1,6 +1,4 @@
-package edu.cmu.courses.simplemr.io;
-
-import java.io.IOException;
+package edu.cmu.courses.simplemr.mapreduce.io;
 
 public abstract class FileReader {
     protected FileBlock fileBlock;

@@ -1,4 +1,4 @@
-package edu.cmu.courses.simplemr.mapreduce.tasktracker;
+package edu.cmu.courses.simplemr.mapreduce;
 
 import edu.cmu.courses.simplemr.mapreduce.task.MapperTask;
 import edu.cmu.courses.simplemr.mapreduce.task.ReducerTask;

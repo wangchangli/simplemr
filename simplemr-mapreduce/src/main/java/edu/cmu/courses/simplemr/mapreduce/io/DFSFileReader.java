@@ -1,4 +1,4 @@
-package edu.cmu.courses.simplemr.io;
+package edu.cmu.courses.simplemr.mapreduce.io;
 
 import edu.cmu.courses.simplemr.dfs.DFSChunk;
 import edu.cmu.courses.simplemr.dfs.DFSClient;

@@ -1,11 +1,10 @@
 package edu.cmu.courses.simplemr.mapreduce.tasktracker;
 
-import com.sun.org.apache.bcel.internal.util.ClassPath;
-import edu.cmu.courses.simplemr.Constants;
+import edu.cmu.courses.simplemr.mapreduce.TaskTrackerService;
 import edu.cmu.courses.simplemr.mapreduce.common.MapReduceConstants;
-import edu.cmu.courses.simplemr.io.FileBlock;
-import edu.cmu.courses.simplemr.io.LocalFileReader;
-import edu.cmu.courses.simplemr.io.LocalFileWriter;
+import edu.cmu.courses.simplemr.mapreduce.io.FileBlock;
+import edu.cmu.courses.simplemr.mapreduce.io.LocalFileReader;
+import edu.cmu.courses.simplemr.mapreduce.io.LocalFileWriter;
 import edu.cmu.courses.simplemr.mapreduce.common.Pair;
 import edu.cmu.courses.simplemr.mapreduce.io.OutputCollector;
 import edu.cmu.courses.simplemr.mapreduce.task.MapperTask;
@@ -13,8 +12,6 @@ import edu.cmu.courses.simplemr.mapreduce.task.ReducerTask;
 import edu.cmu.courses.simplemr.mapreduce.task.Task;
 import edu.cmu.courses.simplemr.mapreduce.task.TaskType;
 
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.*;
 import java.rmi.RemoteException;
