@@ -2,6 +2,13 @@ package edu.cmu.courses.simplemr.mapreduce.io;
 
 import java.io.IOException;
 
+/**
+ * Abstract super class of DFS File Writer.
+ *
+ * @author Jian Fang(jianf)
+ * @author Fangyu Gao(fangyug)
+ */
+
 public abstract class FileWriter {
     protected String file;
 

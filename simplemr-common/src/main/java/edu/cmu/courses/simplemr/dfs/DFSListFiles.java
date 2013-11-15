@@ -7,6 +7,14 @@ import edu.cmu.courses.simplemr.Constants;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 
+/**
+ * The "dfs-ls" operation in distributed file system.
+ * List all the files in a directory.
+ *
+ * @author Jian Fang(jianf)
+ * @author Fangyu Gao(fangyug)
+ */
+
 public class DFSListFiles {
     @Parameter(names = {"-rh", "--master-registry-host"}, description = "The host of master registry service")
     private String registryHost = Constants.DEFAULT_REGISTRY_HOST;

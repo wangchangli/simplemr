@@ -22,6 +22,14 @@ import java.rmi.registry.Registry;
 import java.util.*;
 import java.util.concurrent.*;
 
+/**
+ * The Task Tracker class for accepting map and reduce task
+ * from Job Tracker.
+ *
+ * @author Jian Fang(jianf)
+ * @author Fangyu Gao(fangyug)
+ */
+
 public class TaskTracker {
 
     @Parameter(names = {"-dh", "--dfs-master-registry-host"}, description = "the registry host of DFS master")

@@ -6,6 +6,13 @@ import edu.cmu.courses.simplemr.dfs.DFSFile;
 
 import java.io.IOException;
 
+/**
+ * Read from distributed file system.
+ *
+ * @author Jian Fang(jianf)
+ * @author Fangyu Gao(fangyug)
+ */
+
 public class DFSFileReader extends FileReader {
 
     private DFSClient dfsClient;

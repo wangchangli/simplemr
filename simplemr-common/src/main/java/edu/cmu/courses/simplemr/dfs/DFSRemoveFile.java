@@ -8,6 +8,14 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.List;
 
+/**
+ * The "dfs-rm" operation in distributed file system.
+ * Remove the file.
+ *
+ * @author Jian Fang(jianf)
+ * @author Fangyu Gao(fangyug)
+ */
+
 public class DFSRemoveFile {
     @Parameter(required = true, description = "filename")
     private List<String> fileNames;

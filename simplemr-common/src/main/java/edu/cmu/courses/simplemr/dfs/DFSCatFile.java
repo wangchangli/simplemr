@@ -8,6 +8,14 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.List;
 
+/**
+ * The "dfs-cat" operation in distributed file system.
+ * Showing the file.
+ *
+ * @author Jian Fang(jianf)
+ * @author Fangyu Gao(fangyug)
+ */
+
 public class DFSCatFile {
     @Parameter(required = true, description = "filename")
     private List<String> fileNames;

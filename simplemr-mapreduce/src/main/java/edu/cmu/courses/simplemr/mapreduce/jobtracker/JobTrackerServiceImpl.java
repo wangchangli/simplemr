@@ -13,6 +13,14 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
+/**
+ * Implementation of service class. The class contains a JobTracker
+ * instance that can do the jobs.
+ *
+ * @author Jian Fang(jianf)
+ * @author Fangyu Gao(fangyug)
+ */
+
 public class JobTrackerServiceImpl extends UnicastRemoteObject implements JobTrackerService {
 
     private JobTracker jobTracker;

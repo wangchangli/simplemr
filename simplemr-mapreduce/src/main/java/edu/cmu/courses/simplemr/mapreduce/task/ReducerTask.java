@@ -1,5 +1,12 @@
 package edu.cmu.courses.simplemr.mapreduce.task;
 
+/**
+ * The Reducer Task extends the Task superclass. It contains
+ * the parameters need to perform a reduce task.
+ *
+ * @author Jian Fang(jianf)
+ * @author Fangyu Gao(fangyug)
+ */
 public class ReducerTask extends Task {
 
     private String outputFile;

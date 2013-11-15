@@ -1,5 +1,12 @@
 package edu.cmu.courses.simplemr;
 
+/**
+ * Define some parameters for MapReduce.
+ *
+ * @author Jian Fang(jianf)
+ * @author Fangyu Gao(fangyug)
+ */
+
 public class Constants {
     public static final String FILE_SEPARATOR = System.getProperty("file.separator");
     public static final long DEFAULT_HEARTBEAT_PERIOD = 1000;

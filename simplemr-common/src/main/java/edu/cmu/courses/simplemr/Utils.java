@@ -18,6 +18,13 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.PriorityQueue;
 
+/**
+ * Defined some often use utilities when doing MapReduce.
+ *
+ * @author Jian Fang(jianf)
+ * @author Fangyu Gao(fangyug)
+ */
+
 public class Utils {
     public static String getHost()
             throws UnknownHostException {

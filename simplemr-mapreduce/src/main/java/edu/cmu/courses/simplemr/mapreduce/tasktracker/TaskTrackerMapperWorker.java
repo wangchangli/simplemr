@@ -17,6 +17,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+/**
+ * The task worker to do the map work. It run the user map function
+ * and save the result to local. Use TreeMap to automatically sort
+ * on mapper side, and can handle duplicate keys and values.
+ *
+ * @author Jian Fang(jianf)
+ * @author Fangyu Gao(fangyug)
+ */
+
 public class TaskTrackerMapperWorker extends TaskTrackerWorker{
     private DFSFileReader reader;
 

@@ -6,6 +6,13 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicLong;
 
+/**
+ * Representing a chunk in distributed file system.
+ *
+ * @author Jian Fang(jianf)
+ * @author Fangyu Gao(fangyug)
+ */
+
 public class DFSChunk implements Serializable, Comparable<DFSChunk> {
     public static AtomicLong maxId = new AtomicLong(0);
 

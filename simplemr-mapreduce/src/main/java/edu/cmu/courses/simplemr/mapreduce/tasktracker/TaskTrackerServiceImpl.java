@@ -8,6 +8,14 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.List;
 
+/**
+ * Implementation of service class. The class contains a TaskTracker
+ * instance that can do the tasks.
+ *
+ * @author Jian Fang(jianf)
+ * @author Fangyu Gao(fangyug)
+ */
+
 public class TaskTrackerServiceImpl extends UnicastRemoteObject implements TaskTrackerService {
 
     private TaskTracker taskTracker;
