@@ -42,4 +42,13 @@ public class DFSSlaveServiceImpl extends UnicastRemoteObject implements DFSSlave
         LOG.info("delete chunk " + chunkId);
         slave.delete(chunkId);
     }
+
+    @Override
+    public long[] linesOffset(long chunkId) throws RemoteException {
+        try {
+            return slave.linesOffset(chunkId);
+        } catch (IOException e) {
+            throw new RemoteException("can't access chunk " + chunkId);
+        }
+    }
 }

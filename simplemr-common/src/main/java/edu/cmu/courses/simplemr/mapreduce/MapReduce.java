@@ -1,6 +1,6 @@
-package edu.cmu.courses.simplemr.mapreduce.common;
+package edu.cmu.courses.simplemr.mapreduce;
 
-import edu.cmu.courses.simplemr.mapreduce.io.OutputCollector;
+import edu.cmu.courses.simplemr.mapreduce.OutputCollector;
 
 import java.io.Serializable;
 import java.util.Iterator;

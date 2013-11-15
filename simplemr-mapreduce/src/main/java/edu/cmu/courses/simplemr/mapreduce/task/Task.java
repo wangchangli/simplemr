@@ -1,43 +1,31 @@
 package edu.cmu.courses.simplemr.mapreduce.task;
 
+import edu.cmu.courses.simplemr.Constants;
 import edu.cmu.courses.simplemr.mapreduce.tasktracker.TaskTrackerInfo;
 
+import java.io.File;
 import java.io.Serializable;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class Task implements Serializable, Comparable<Task>{
+
+    private static AtomicInteger maxId = new AtomicInteger();
+    public static final String TASK_FOLDER_PREFIX = "simplemr_task_";
+
     protected int taskId;
     protected int jobId;
     protected TaskType type;
     protected TaskStatus status;
-    protected TaskTrackerInfo taskTrackerInfo;
     protected int attemptCount;
-    protected int mapperNum;
-    protected int reducerNum;
+    protected String taskTrackerName;
+    protected String mrClassName;
+    protected String outputDir;
 
-
-    public Task(int taskId, int jobId, TaskType type){
-        setTaskId(taskId);
+    public Task(int jobId, TaskType type){
+        setTaskId(maxId.getAndIncrement());
         setJobId(jobId);
         setType(type);
-        setStatus(TaskStatus.INITIALIZING);
-        setTaskTrackerInfo(null);
         attemptCount = 0;
-    }
-
-    public void setReducerNum(int reducerNum) {
-        this.reducerNum =  reducerNum;
-    }
-
-    public int getReducerNum() {
-        return mapperNum;
-    }
-
-    public void setMapperNum(int mapperNum) {
-        this.mapperNum = mapperNum;
-    }
-
-    public int getMapperNum() {
-        return mapperNum;
     }
 
     @Override
@@ -52,11 +40,6 @@ public abstract class Task implements Serializable, Comparable<Task>{
         } else {
             return false;
         }
-    }
-
-    @Override
-    public int hashCode(){
-        return taskId;
     }
 
     public int getTaskId() {
@@ -91,19 +74,63 @@ public abstract class Task implements Serializable, Comparable<Task>{
         this.status = status;
     }
 
-    public TaskTrackerInfo getTaskTrackerInfo() {
-        return taskTrackerInfo;
-    }
-
-    public void setTaskTrackerInfo(TaskTrackerInfo taskTrackerInfo) {
-        this.taskTrackerInfo = taskTrackerInfo;
-    }
-
     public int getAttemptCount(){
         return attemptCount;
     }
 
     public void increaseAttemptCount(){
         attemptCount++;
+    }
+
+    public void setAttemptCount(int count){
+        attemptCount = count;
+    }
+
+    public String getTaskTrackerName() {
+        return taskTrackerName;
+    }
+
+    public void setTaskTrackerName(String name){
+        taskTrackerName = name;
+    }
+
+    public void setTaskTrackerName(TaskTrackerInfo taskTracker) {
+        taskTracker.addTask(this);
+        this.taskTrackerName = taskTracker.toString();
+    }
+
+    public String getMRClassName() {
+        return mrClassName;
+    }
+
+    public void setMRClassName(String className) {
+        this.mrClassName = className;
+    }
+
+    public String getTaskFolderName(){
+        return Constants.TASKS_FILE_URI + Constants.FILE_SEPARATOR + TASK_FOLDER_PREFIX + taskId;
+    }
+
+    public String getOutputDir() {
+        return outputDir;
+    }
+
+    public void setOutputDir(String outputDir) {
+        this.outputDir = outputDir;
+    }
+
+    public void createTaskFolder(){
+        File folder = new File(outputDir + Constants.FILE_SEPARATOR + getTaskFolderName());
+        if(folder.exists()){
+            folder.delete();
+        }
+        folder.mkdirs();
+    }
+
+    public void deleteTaskFolder(){
+        File folder = new File(outputDir + Constants.FILE_SEPARATOR + getTaskFolderName());
+        if(folder.exists()){
+            folder.delete();
+        }
     }
 }

@@ -7,4 +7,5 @@ public interface DFSSlaveService extends Remote {
     public byte[] read(long chunkId, long offset, int size) throws RemoteException;
     public boolean write(long chunkId, long offset, int size, byte[] data) throws RemoteException;
     public void delete(long chunkId) throws RemoteException;
+    public long[] linesOffset(long chunkId) throws RemoteException;
 }

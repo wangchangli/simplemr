@@ -2,71 +2,53 @@ package edu.cmu.courses.simplemr.mapreduce.task;
 
 public class ReducerTask extends Task {
 
-    private String outputFilePrefix;
-    String mapperTrackerHost;
-    int mapperTrackerPort;
-    int mapperTaskId;
-    String reducerInputDir;
-    boolean startReduce;
+    private String outputFile;
+    private int partitionIndex;
+    private int mapperAmount;
+    private int replicas;
+    private int lineCount;
 
-    /**
-     * which partition of file to get from a mapper
-     */
-    int partition;
-
-
-
-    //private List<MapperTask> mapperTasks;
-
-    public ReducerTask(int taskId, int jobId) {
-        super(taskId, jobId, TaskType.REDUCER);
+    public ReducerTask(int jobId) {
+        super(jobId, TaskType.REDUCER);
     }
 
-    public void setMapperTrackerHost(String host) {
-        this.mapperTrackerHost = host;
+    public String getOutputFile() {
+        return outputFile;
     }
 
-    public String getMapperTrackerHost() {
-        return mapperTrackerHost;
+    public void setOutputFile(String outputFile) {
+        this.outputFile = outputFile;
     }
 
-    public void setMapperTrackerPort(int port) {
-        this.mapperTrackerPort = port;
+    public int getPartitionIndex() {
+        return partitionIndex;
     }
 
-    public int getMapperTrackerPort() {
-        return mapperTrackerPort;
+    public void setPartitionIndex(int partitionIndex) {
+        this.partitionIndex = partitionIndex;
     }
 
-    public void setMapperTaskId(int id) {
-        mapperTaskId = id;
+    public int getMapperAmount() {
+        return mapperAmount;
     }
 
-    public int getMapperTaskId() {
-        return mapperTaskId;
+    public void setMapperAmount(int mapperAmount) {
+        this.mapperAmount = mapperAmount;
     }
 
-    public void setReducerInputDir(String dir) {
-        reducerInputDir = dir;
+    public int getReplicas() {
+        return replicas;
     }
 
-    public String getReducerInputDir() {
-        return reducerInputDir;
+    public void setReplicas(int replicas) {
+        this.replicas = replicas;
     }
 
-    public int getPartition(){
-        return partition;
+    public int getLineCount() {
+        return lineCount;
     }
 
-    public void setPartition(int partition) {
-        this.partition = partition;
-    }
-
-    public void setStartReduce(boolean b){
-        this.startReduce = b;
-    }
-
-    public boolean getStartReduce() {
-        return startReduce;
+    public void setLineCount(int lineCount) {
+        this.lineCount = lineCount;
     }
 }

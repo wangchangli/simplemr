@@ -1,0 +1,6 @@
+#!/bin/bash
+
+base=`dirname $0`/..
+export CLASSPATH=$base/lib/*:$CLASSPATH
+java edu.cmu.courses.simplemr.mapreduce.jobtracker.JobTracker $@
+

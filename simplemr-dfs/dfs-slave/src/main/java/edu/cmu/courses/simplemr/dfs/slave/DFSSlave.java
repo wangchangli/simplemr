@@ -6,15 +6,16 @@ import edu.cmu.courses.simplemr.Constants;
 import edu.cmu.courses.simplemr.dfs.DFSConstants;
 import edu.cmu.courses.simplemr.dfs.DFSMasterService;
 import edu.cmu.courses.simplemr.dfs.DFSSlaveService;
+import org.apache.commons.lang.ArrayUtils;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.io.*;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -87,6 +88,26 @@ public class DFSSlave {
         raf.seek(offset);
         raf.write(data, 0, Math.min(size, data.length));
         raf.close();
+    }
+
+    public long[] linesOffset(long chunkId)
+            throws IOException {
+        File file = new File(getFilePath(chunkId));
+        List<Long> offsets = new ArrayList<Long>();
+        FileInputStream in = new FileInputStream(file);
+        byte ch;
+        byte prevChar = -1;
+        long offset = 0;
+        while((ch = (byte)in.read()) != -1){
+            if(prevChar == -1 || prevChar == '\n'){
+                offsets.add(offset);
+            }
+            offset++;
+            prevChar = ch;
+        }
+        Long[] results = new Long[offsets.size()];
+        offsets.toArray(results);
+        return ArrayUtils.toPrimitive(results);
     }
 
     public void delete(long chunkId){

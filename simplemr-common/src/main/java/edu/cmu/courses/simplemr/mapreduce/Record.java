@@ -1,4 +1,4 @@
-package edu.cmu.courses.simplemr.mapreduce.common;
+package edu.cmu.courses.simplemr.mapreduce;
 
 public class Record implements Comparable<Record> {
     private String key;

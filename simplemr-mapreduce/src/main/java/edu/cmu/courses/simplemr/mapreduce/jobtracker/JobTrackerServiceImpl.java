@@ -1,9 +1,11 @@
 package edu.cmu.courses.simplemr.mapreduce.jobtracker;
 
-import edu.cmu.courses.simplemr.mapreduce.JobTrackerService;
-import edu.cmu.courses.simplemr.mapreduce.common.JobConfig;
+import edu.cmu.courses.simplemr.mapreduce.JobConfig;
+import edu.cmu.courses.simplemr.mapreduce.task.MapperTask;
+import edu.cmu.courses.simplemr.mapreduce.task.ReducerTask;
 import edu.cmu.courses.simplemr.mapreduce.tasktracker.TaskTrackerInfo;
 
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
@@ -17,13 +19,13 @@ public class JobTrackerServiceImpl extends UnicastRemoteObject implements JobTra
     }
 
     @Override
-    public int newJobId() throws RemoteException {
-        return JobInfo.generateId();
-    }
-
-    @Override
     public boolean submitJob(JobConfig jobConfig) throws RemoteException {
-        return jobTracker.submitJob(jobConfig);
+        try {
+            jobTracker.submitJob(jobConfig);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     @Override
@@ -32,17 +34,27 @@ public class JobTrackerServiceImpl extends UnicastRemoteObject implements JobTra
     }
 
     @Override
-    public void taskSucceed(int taskId) throws RemoteException {
-        jobTracker.taskSucceed(taskId);
+    public void mapperTaskSucceed(MapperTask task) throws RemoteException {
+        jobTracker.mapperTaskSucceed(task);
     }
 
     @Override
-    public void taskFailure(int taskId) throws RemoteException {
-        jobTracker.taskFailure(taskId);
+    public void reducerTaskSucceed(ReducerTask task) throws RemoteException {
+        jobTracker.reducerTaskSucceed(task);
     }
 
     @Override
-    public void reducerPrepareFailure(int failedMapperTaskId) throws RemoteException {
-        //TODO needs implementation.
+    public void mapperTaskFailed(MapperTask task) throws RemoteException {
+        jobTracker.mapperTaskFailed(task);
+    }
+
+    @Override
+    public void reducerTaskFailed(ReducerTask task) throws RemoteException {
+        jobTracker.reducerTaskFailed(task);
+    }
+
+    @Override
+    public void reducerTaskFailedOnMapperTask(ReducerTask reducerTask, MapperTask mapperTask) throws RemoteException {
+        jobTracker.reducerTaskFailedOnMapper(reducerTask, mapperTask);
     }
 }

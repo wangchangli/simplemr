@@ -1,35 +1,38 @@
 package edu.cmu.courses.simplemr.mapreduce.tasktracker;
 
 import edu.cmu.courses.simplemr.Constants;
+import edu.cmu.courses.simplemr.mapreduce.task.MapperTask;
+import edu.cmu.courses.simplemr.mapreduce.task.ReducerTask;
 import edu.cmu.courses.simplemr.mapreduce.task.Task;
+import edu.cmu.courses.simplemr.mapreduce.task.TaskStatus;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 public class TaskTrackerInfo implements Serializable{
     private String host;
-    private int port;
+    private int fileServerPort;
     private int mapperTaskNumber;
     private int reduceTaskNumber;
-    private String mapperOutputDir;
     private long timestamp;
     private long invalidPeriod;
-    private List<Task> tasks;
+    private Set<Task> tasks;
 
-    public TaskTrackerInfo(String host, int port, String mapperOutputDir){
-        this(host, port, mapperOutputDir, Constants.DEFAULT_HEARTBEAT_INVALID);
+    public TaskTrackerInfo(String host, int port){
+        this(host, port, Constants.DEFAULT_HEARTBEAT_INVALID);
     }
 
-    public TaskTrackerInfo(String host, int port, String mapperOutputDir, long invalidPeriod){
+    public TaskTrackerInfo(String host, int fileServerPort, long invalidPeriod){
         this.host = host;
-        this.port = port;
-        this.mapperOutputDir = mapperOutputDir;
+        this.fileServerPort = fileServerPort;
         this.mapperTaskNumber = 0;
         this.reduceTaskNumber = 0;
         this.timestamp = 0;
         this.invalidPeriod = invalidPeriod;
-        this.tasks = new ArrayList<Task>();
+        this.tasks = new TreeSet<Task>();
     }
 
     public Task[] getTasks(){
@@ -38,9 +41,40 @@ public class TaskTrackerInfo implements Serializable{
         return taskArray;
     }
 
+    public List<Task> getPendingTasks(){
+        List<Task> pendingTasks = new ArrayList<Task>();
+        for(Task task : tasks){
+            if(task.getStatus() == TaskStatus.PENDING){
+                pendingTasks.add(task);
+            }
+        }
+        return pendingTasks;
+    }
+
+    public List<MapperTask> getPendingMapperTask(){
+        List<MapperTask> pendingMapperTasks = new ArrayList<MapperTask>();
+        for(Task task : tasks){
+            if(task instanceof MapperTask && task.getStatus() == TaskStatus.PENDING){
+                pendingMapperTasks.add((MapperTask)task);
+            }
+        }
+        return pendingMapperTasks;
+    }
+
+    public List<ReducerTask> getPendingReducerTask(){
+        List<ReducerTask> pendingReducerTasks = new ArrayList<ReducerTask>();
+        for(Task task : tasks){
+            if(task instanceof ReducerTask && task.getStatus() == TaskStatus.PENDING){
+                pendingReducerTasks.add((ReducerTask)task);
+            }
+        }
+        return pendingReducerTasks;
+    }
+
     public void addTask(Task task){
         tasks.add(task);
     }
+
 
     public void removeTask(Task task){
         tasks.remove(task);
@@ -50,28 +84,40 @@ public class TaskTrackerInfo implements Serializable{
         return host;
     }
 
-    public int getPort() {
-        return port;
+    public int getFileServerPort() {
+        return fileServerPort;
     }
 
     public int getMapperTaskNumber() {
         return mapperTaskNumber;
     }
 
-    public int getReduceTaskNumber() {
+    public int getReducerTaskNumber() {
         return reduceTaskNumber;
     }
 
-    public void setMapperTaskNumber(int mapperTaskNumber) {
-        this.mapperTaskNumber = mapperTaskNumber;
+    public void increaseMapperTaskNumber(){
+        mapperTaskNumber++;
     }
 
-    public void setReduceTaskNumber(int reduceTaskNumber) {
-        this.reduceTaskNumber = reduceTaskNumber;
+    public void increaseReducerTaskNumber(){
+        reduceTaskNumber++;
     }
 
-    public String getMapperOutputDir() {
-        return mapperOutputDir;
+    public void decreaseMapperTaskNumber(){
+        mapperTaskNumber--;
+    }
+
+    public void decreaseReducerTaskNumber(){
+        reduceTaskNumber--;
+    }
+
+    public void setMapperTaskNumber(int number){
+        mapperTaskNumber = number;
+    }
+
+    public void setReduceTaskNumber(int number){
+        reduceTaskNumber = number;
     }
 
     public void setTimestamp(long timestamp){
@@ -89,7 +135,7 @@ public class TaskTrackerInfo implements Serializable{
     public boolean equals(Object taskTrackerInfo){
         if(taskTrackerInfo instanceof TaskTrackerInfo){
             return (host.equals(((TaskTrackerInfo) taskTrackerInfo).getHost())) &&
-                   (port == ((TaskTrackerInfo) taskTrackerInfo).getPort());
+                   (fileServerPort == ((TaskTrackerInfo) taskTrackerInfo).getFileServerPort());
         } else {
             return false;
         }
@@ -97,7 +143,7 @@ public class TaskTrackerInfo implements Serializable{
 
     @Override
     public String toString(){
-        return host + ":" + port;
+        return host + ":" + getFileServerPort();
     }
 
     @Override

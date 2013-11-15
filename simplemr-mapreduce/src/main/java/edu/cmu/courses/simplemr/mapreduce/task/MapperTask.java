@@ -1,18 +1,43 @@
 package edu.cmu.courses.simplemr.mapreduce.task;
 
+import edu.cmu.courses.simplemr.mapreduce.io.FileBlock;
+
 public class MapperTask extends Task {
 
-    private String inputFile;
-    private long fileOffset;
-    private long fileSize;
-    private String outputDir;
-    private ReducerTask reducerTask;
+    public static final String PARTITION_FILE_PREFIX = "PART_";
 
-    public MapperTask(int taskId, int jobId) {
-        super(taskId, jobId, TaskType.MAPPER);
+    private FileBlock inputFileBlock;
+    private int reducerAmount;
+    private String fileServerHost;
+    private int fileServerPort;
+
+    public MapperTask(int jobId, FileBlock inputFileBlock, int reducerAmount) {
+        super(jobId, TaskType.MAPPER);
+        this.inputFileBlock = inputFileBlock;
+        this.reducerAmount = reducerAmount;
     }
 
-    public ReducerTask getReducerTask(){
-        return reducerTask;
+    public FileBlock getInputFileBlock(){
+        return inputFileBlock;
+    }
+
+    public int getReducerAmount(){
+        return reducerAmount;
+    }
+
+    public String getFileServerHost() {
+        return fileServerHost;
+    }
+
+    public void setFileServerHost(String fileServerHost) {
+        this.fileServerHost = fileServerHost;
+    }
+
+    public int getFileServerPort() {
+        return fileServerPort;
+    }
+
+    public void setFileServerPort(int fileServerPort) {
+        this.fileServerPort = fileServerPort;
     }
 }

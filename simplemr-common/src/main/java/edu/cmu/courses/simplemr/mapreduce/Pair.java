@@ -1,4 +1,4 @@
-package edu.cmu.courses.simplemr.mapreduce.common;
+package edu.cmu.courses.simplemr.mapreduce;
 
 public class Pair<K, V> implements Comparable<Pair> {
     private K key;

@@ -1,18 +1,18 @@
 package edu.cmu.courses.simplemr.mapreduce.jobtracker;
 
-import edu.cmu.courses.simplemr.mapreduce.task.Task;
+import edu.cmu.courses.simplemr.mapreduce.task.MapperTask;
 
 public class JobTrackerDispatcher implements Runnable {
     private JobTracker jobTracker;
-    private Task task;
+    private MapperTask task;
 
-    public JobTrackerDispatcher(JobTracker jobTracker, Task task){
+    public JobTrackerDispatcher(JobTracker jobTracker, MapperTask task){
         this.jobTracker = jobTracker;
         this.task = task;
     }
 
     @Override
     public void run() {
-        jobTracker.dispatchTask(task);
+        jobTracker.dispatchMapperTask(task);
     }
 }

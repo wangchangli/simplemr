@@ -1,6 +1,7 @@
 package edu.cmu.courses.simplemr.mapreduce.jobtracker;
 
 import edu.cmu.courses.simplemr.Constants;
+import edu.cmu.courses.simplemr.mapreduce.task.MapperTask;
 import edu.cmu.courses.simplemr.mapreduce.task.Task;
 import edu.cmu.courses.simplemr.mapreduce.task.TaskStatus;
 import org.slf4j.Logger;
@@ -28,13 +29,13 @@ public class JobTrackerScheduler implements Runnable{
     public void run() {
         while(true){
             try {
-                Task task = jobTracker.takeTask();
+                MapperTask task = jobTracker.takeMapperTask();
                 task.setStatus(TaskStatus.PENDING);
                 JobTrackerDispatcher dispatcher = new JobTrackerDispatcher(jobTracker, task);
                 pool.execute(dispatcher);
             } catch (InterruptedException e) {
                 LOG.error("Job scheduler is interrupted!", e);
-                break;
+                System.exit(-1);
             }
         }
     }

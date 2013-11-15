@@ -1,257 +1,210 @@
 package edu.cmu.courses.simplemr.mapreduce.tasktracker;
 
-import edu.cmu.courses.simplemr.mapreduce.TaskTrackerService;
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.Parameter;
+import edu.cmu.courses.simplemr.Constants;
+import edu.cmu.courses.simplemr.Utils;
+import edu.cmu.courses.simplemr.mapreduce.Pair;
 import edu.cmu.courses.simplemr.mapreduce.common.MapReduceConstants;
-import edu.cmu.courses.simplemr.mapreduce.io.FileBlock;
-import edu.cmu.courses.simplemr.mapreduce.io.LocalFileReader;
-import edu.cmu.courses.simplemr.mapreduce.io.LocalFileWriter;
-import edu.cmu.courses.simplemr.mapreduce.common.Pair;
-import edu.cmu.courses.simplemr.mapreduce.io.OutputCollector;
+import edu.cmu.courses.simplemr.mapreduce.fileserver.FileServer;
+import edu.cmu.courses.simplemr.mapreduce.jobtracker.JobTrackerService;
 import edu.cmu.courses.simplemr.mapreduce.task.MapperTask;
 import edu.cmu.courses.simplemr.mapreduce.task.ReducerTask;
 import edu.cmu.courses.simplemr.mapreduce.task.Task;
-import edu.cmu.courses.simplemr.mapreduce.task.TaskType;
+import edu.cmu.courses.simplemr.mapreduce.task.TaskStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Method;
-import java.net.*;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.*;
+import java.util.concurrent.*;
 
 public class TaskTracker {
-    private TaskTrackerInfo taskTrackerInfo;
-    private List<MapperTask> mapperTasks;
-    private List<ReducerTask> reducerTasks;
 
-    private TaskTrackerService service;
-    private String registryHost;
-    private int registryPort;
+    @Parameter(names = {"-rh", "--registry-host"}, description = "the registry host")
+    private String registryHost = Constants.DEFAULT_REGISTRY_HOST;
+
+    @Parameter(names = {"-rp", "--registry-port"}, description = "the registry port")
+    private int registryPort = Constants.DEFAULT_REGISTRY_PORT;
+
+    @Parameter(names = {"-fp", "--file-server-port"}, description = "the port of file server")
+    private int fileServerPort = MapReduceConstants.DEFAULT_FILE_SERVER_PORT;
+
+    @Parameter(names = {"-t", "--temp-dir"}, description = "the directory of temporary files")
+    private String tempDir = "/tmp/simplemr-mapreduce-tasktracker";
+
+    @Parameter(names = {"-p", "--invalid-period"}, description = "the period of invalid state")
+    private long invalidPeriod = Constants.DEFAULT_HEARTBEAT_INVALID;
+
+    @Parameter(names = {"-b", "--heartbeat"}, description = "the period of heartbeat (ms)")
+    private long heartbeatPeriod = Constants.DEFAULT_HEARTBEAT_PERIOD;
+
+    @Parameter(names = {"-n", "--num-threads"}, description = "the number of threads")
+    private int threadPoolSize = Constants.DEFAULT_THREAD_POOL_SIZE;
+
+    @Parameter(names = {"-h", "--help"}, help = true)
+    private boolean help;
+
+    private static Logger LOG = LoggerFactory.getLogger(TaskTracker.class);
+
+    private TaskTrackerInfo taskTrackerInfo;
+    private PriorityBlockingQueue<Pair<MapperTask, ReducerTask>> reducersQueue;
+
+    private TaskTrackerService taskTrackerService;
+    private JobTrackerService jobTrackerService;
+    private ExecutorService threadPool;
+    private ScheduledExecutorService heartbeatPool;
     private Registry registry;
 
-    public TaskTracker(String rHost, int rPort, int localPort,
-                       String mapperOutputDir, long invalidPeriod ) throws RemoteException, UnknownHostException {
-        taskTrackerInfo = new TaskTrackerInfo(getLocalHost(), localPort,
-                mapperOutputDir, invalidPeriod);
-        service = new TaskTrackerServiceImpl(this);
-        registryHost = rHost;
-        registryPort = rPort;
-        //bindService();
-    }
-    private void bindService()
-            throws RemoteException {
-        registry = LocateRegistry.getRegistry(registryHost, registryPort);
-        registry.rebind(taskTrackerInfo.getHost() + ":"
-                + Integer.toString(taskTrackerInfo.getPort()), service);
+    public TaskTracker(){
+        reducersQueue = new PriorityBlockingQueue<Pair<MapperTask, ReducerTask>>();
     }
 
-    private static String getLocalHost()
-            throws UnknownHostException {
-        InetAddress inetAddress = InetAddress.getLocalHost();
-        return inetAddress.getHostName();
+    public void start()
+            throws Exception {
+        taskTrackerInfo = new TaskTrackerInfo(Utils.getHost(), fileServerPort, invalidPeriod);
+        threadPool = Executors.newFixedThreadPool(threadPoolSize);
+        heartbeatPool = Executors.newScheduledThreadPool(Constants.DEFAULT_SCHEDULED_THREAD_POOL_SIZE);
+        bindService();
+        heartbeatPool.scheduleAtFixedRate(new TaskTrackerHeartbeat(this), 0, heartbeatPeriod, TimeUnit.MILLISECONDS);
+        new FileServer(fileServerPort, tempDir).start();
+        Thread reducerDispatcher = new Thread(new TaskTrackerReducerDispatcher(this));
+        reducerDispatcher.start();
     }
 
-    public boolean runTask(Task task) {
+    public void runMapperTask(MapperTask task){
+        task.setOutputDir(tempDir);
+        task.setFileServerHost(taskTrackerInfo.getHost());
+        task.setFileServerPort(taskTrackerInfo.getFileServerPort());
+        task.createTaskFolder();
+        threadPool.execute(new TaskTrackerMapperWorker(task, this));
+        taskTrackerInfo.increaseMapperTaskNumber();
+    }
+
+    public void runReducerTask(MapperTask mapperTask, List<ReducerTask> reducerTasks){
+        for(ReducerTask reducerTask : reducerTasks){
+            reducersQueue.offer(new Pair<MapperTask, ReducerTask>(mapperTask, reducerTask));
+        }
+    }
+
+    public void increaseReducerTaskAmount(){
+        taskTrackerInfo.increaseReducerTaskNumber();
+    }
+
+    public Pair<MapperTask, ReducerTask> takeReducerTask()
+            throws InterruptedException {
+        return reducersQueue.take();
+    }
+
+    public ExecutorService getThreadPool(){
+        return threadPool;
+    }
+
+    public void mapperSucceed(MapperTask task){
+        task.setStatus(TaskStatus.SUCCEED);
         try {
-            if (task.getType() == TaskType.MAPPER) {
-                doMapperWork(task);
-            }
-            if (task.getType() == TaskType.REDUCER) {
-                doReducerWork(task);
-            }
-            reportSuccess();
-        } catch (Exception e) {
-            reportFailure();
+            jobTrackerService.mapperTaskSucceed(task);
+        } catch (RemoteException e) {
+            LOG.warn("can't communicate with job tracker", e);
         }
-        return true;
+        taskTrackerInfo.decreaseMapperTaskNumber();
+        taskFinished(task);
     }
 
-    private void reportFailure() {
-        System.out.println("fail");
-    }
-
-    private void reportSuccess() {
-        System.out.println("success");
-    }
-
-
-    private void doMapperWork(Task task) throws Exception {
-
-        Class<?> mapClass = getClass(task, MapReduceConstants.CLASSNAME);
-
-        Method mapMethod = getMethod(task, mapClass, MapReduceConstants.mapMethodName);
-        OutputCollector collector = collectFromMapper(task, mapClass, mapMethod);
-        saveToLocalFiles(task, collector);
-    }
-
-
-
-    private void saveToLocalFiles(Task task, OutputCollector collector) throws Exception {
-        LocalFileWriter[] localFileWriter = new LocalFileWriter[task.getReducerNum()];
-        for (int i = 0; i < task.getReducerNum(); i++) {
-            localFileWriter[i] = new LocalFileWriter(
-                    taskTrackerInfo.getMapperOutputDir() + task.getJobId() + "_" +
-                            task.getTaskId() + "_" + Integer.toString(i) + ".txt");
+    public void mapperFailed(MapperTask task){
+        try {
+            jobTrackerService.mapperTaskFailed(task);
+        } catch (RemoteException e) {
+            LOG.warn("can't communicate with job tracker", e);
         }
-        Iterator<Pair<String, String>> it = collector.getIterator();
-        Pair<String, String> entry;
-        while (it.hasNext()) {
-            entry = it.next();
-            int hash = Math.abs(entry.getKey().hashCode()) % task.getReducerNum();
-            localFileWriter[hash].writeLine(entry.getKey() + MapReduceConstants.delimiter + entry.getValue());
-        }
-        for (int i = 0; i < task.getReducerNum(); i++) {
-            localFileWriter[i].close();
+        taskTrackerInfo.decreaseMapperTaskNumber();
+        taskFinished(task);
+    }
+
+    public void reducerFailedOnMapper(ReducerTask reducerTask, MapperTask mapperTask){
+        mapperTask.setStatus(TaskStatus.FAILED);
+        try {
+            jobTrackerService.reducerTaskFailedOnMapperTask(reducerTask, mapperTask);
+        } catch (RemoteException e) {
+            LOG.warn("can't communicate with job tracker", e);
         }
     }
 
-
-    private OutputCollector collectFromMapper(Task task, Class<?> mapClass, Method mapMethod)
-            throws Exception {
-
-
-         LocalFileReader fileReader = new LocalFileReader(new FileBlock(
-                MapReduceConstants.inputFileName, MapReduceConstants.offset, MapReduceConstants.size));
-        String line;
-
-        String[] token;
-        OutputCollector collector = new OutputCollector();
-        Object mapObject = mapClass.newInstance();
-        while ((line = fileReader.readLine()) != null) {
-            token = line.split(MapReduceConstants.delimiter, 2);
-            String key = token[0];
-            String value = token[1];
-
-            mapMethod.invoke(mapObject, key, value, collector);
-
+    public void reducerFailed(ReducerTask task){
+        try {
+            jobTrackerService.reducerTaskFailed(task);
+        } catch (RemoteException e) {
+            LOG.warn("can't communicate with job tracker", e);
         }
-        return collector;
+        taskTrackerInfo.decreaseReducerTaskNumber();
+        taskFinished(task);
     }
 
-
-    private Class<?> getClass(Task task, String className) throws MalformedURLException, ClassNotFoundException {
-        return Class.forName(className);
+    public void reducerSucceed(ReducerTask task){
+        task.setStatus(TaskStatus.SUCCEED);
+        try {
+            jobTrackerService.reducerTaskSucceed(task);
+        } catch (RemoteException e) {
+            LOG.warn("can't communicate with job tracker", e);
+        }
+        taskTrackerInfo.decreaseReducerTaskNumber();
+        taskFinished(task);
     }
 
-
-    private Method getMethod(Task task, Class<?> mapreduceClass, String methodName)
-            throws MalformedURLException, ClassNotFoundException, NoSuchMethodException {
-        Class params[] = new Class[3];
-        params[0] = String.class;
-        if(methodName.equals("map")){
-            params[1] = String.class;
-        }
-        else{
-            params[1] = Iterator.class;
-        }
-        params[2] = OutputCollector.class;
-        return mapreduceClass.getDeclaredMethod(methodName, params);
-    }
-
-    private void doReducerWork(Task task) throws Exception {
-
-        loadFileToLocal(task);
-
-        if (((ReducerTask)task).getStartReduce()) {
-            sortAndMerge(task);
-            Class<?> reduceClass = getClass(task, MapReduceConstants.CLASSNAME);
-            Method reduceMethod = getMethod(task, reduceClass, MapReduceConstants.reduceMethodName);
-
-            OutputCollector collector = collectFromReducer(task, reduceClass, reduceMethod);
-            saveToDFS(task, collector);
+    public void heartbeat(){
+        try {
+            jobTrackerService.heartbeat(taskTrackerInfo);
+        } catch (RemoteException e) {
+            LOG.error("can't heartbeat with job tracker", e);
         }
     }
 
-    private OutputCollector collectFromReducer(Task task, Class<?> reduceClass, Method reduceMethod)
-            throws Exception {
-        String reduceOutputDir = "simplemr-mapreduce/src/main/java/edu/cmu/courses/" +
-                "simplemr/mapreduce/examples/ReducerOutput/";
-        LocalFileReader fileReader = new LocalFileReader(new FileBlock(
-                reduceOutputDir + task.getJobId() + "_" + ((ReducerTask)task).getPartition()+ ".txt", MapReduceConstants.offset, MapReduceConstants.size));
-        String line;
-
-        OutputCollector collector = new OutputCollector();
-
-        String[] token;
-        List<String> values = new ArrayList<String>();
-        Iterator<String> it;
-        String prevKey = null;
-        String key = null;
-        String value = null;
-        Object reduceObject = reduceClass.newInstance();
-        do {
-            line = fileReader.readLine();
-            if(line != null)
-            {
-                token = line.split(MapReduceConstants.delimiter, 2);
-                key = token[0];
-                value = token[1];
-            }
-
-            if (!key.equals(prevKey) || line == null) {
-                if (prevKey != null) {
-                    it = values.iterator();
-                    reduceMethod.invoke(reduceObject, prevKey, it, collector);
-                }
-                if(line == null)
-                    break;
-                prevKey = key;
-                values.clear();
-            }
-            values.add(value);
-
-        } while (true);
-        return collector;
+    public String getRegistryHost() {
+        return registryHost;
     }
 
-    private void saveToDFS(Task task, OutputCollector collector) throws Exception {
-         //TO DO: change from local file system to DFS
-        String reduceOutputDir = "simplemr-mapreduce/src/main/java/edu/cmu/courses/" +
-                "simplemr/mapreduce/examples/ReducerOutput/";
-        LocalFileWriter localFileWriter = new LocalFileWriter(
-                reduceOutputDir + task.getJobId() + "_" + ((ReducerTask)task).getPartition() + "_result.txt");
-        Iterator<Pair<String, String>> it = collector.getIterator();
-        Pair<String, String> entry;
-        while (it.hasNext()) {
-            entry = it.next();
-            localFileWriter.writeLine(entry.getKey() + MapReduceConstants.delimiter + entry.getValue());
-        }
-        localFileWriter.close();
-
+    public int getRegistryPort() {
+        return registryPort;
     }
 
-
-    private void sortAndMerge(Task task) throws Exception {
-        ReducerTask reducerTask = (ReducerTask)task;
-        int MapperNum = task.getMapperNum();
-        LocalFileReader[] fileReader = new LocalFileReader[MapperNum];
-
-        String line;
-        List<String> lines = new ArrayList<String>();
-        for (int i = 0; i < MapperNum; i++) {
-            fileReader[i] = new LocalFileReader(new FileBlock(reducerTask.getReducerInputDir() +
-                    reducerTask.getJobId() + "_" + Integer.toString(i) + "_" +
-                    Integer.toString(reducerTask.getPartition()) + ".txt",
-                    MapReduceConstants.offset, MapReduceConstants.size));
-            while((line = fileReader[i].readLine()) != null) {
-                lines.add(line);
-            }
-
-            fileReader[i].close();
-        }
-        Collections.sort(lines);
-        String reduceOutputDir = "simplemr-mapreduce/src/main/java/edu/cmu/courses/" +
-                "simplemr/mapreduce/examples/ReducerOutput/";
-        String[] strArr= lines.toArray(new String[0]);
-        LocalFileWriter fileWriter = new LocalFileWriter(
-                reduceOutputDir + task.getJobId() + "_" + ((ReducerTask) task).getPartition() + ".txt");
-        for (String cur : strArr) {
-            fileWriter.writeLine(cur);
-        }
-        fileWriter.close();
+    public String getTempDir(){
+        return tempDir;
     }
 
-    private void loadFileToLocal(Task task) {
-           //TO DO: load mapper output to reducer local
+    public boolean needHelp(){
+        return help;
+    }
+
+    private void bindService() {
+        try{
+            taskTrackerService = new TaskTrackerServiceImpl(this);
+            registry = LocateRegistry.getRegistry(registryHost, registryPort);
+            registry.rebind(taskTrackerInfo.toString(), taskTrackerService);
+            jobTrackerService = (JobTrackerService)registry.lookup(JobTrackerService.class.getCanonicalName());
+        } catch (RemoteException e){
+            LOG.error("registry server error", e);
+            System.exit(-1);
+        } catch (NotBoundException e) {
+            LOG.error("jobtracker not bind", e);
+            System.exit(-1);
+        }
+    }
+
+    private void taskFinished(Task task){
+        task.setTaskTrackerName(taskTrackerInfo.toString());
+        task.deleteTaskFolder();
+    }
+
+    public static void main(String[] args) throws Exception {
+        TaskTracker taskTracker = new TaskTracker();
+        JCommander commander = new JCommander(taskTracker, args);
+        if(taskTracker.needHelp()){
+            commander.usage();
+        } else {
+            taskTracker.start();
+        }
     }
 }

@@ -1,5 +1,6 @@
 package edu.cmu.courses.simplemr.dfs;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -8,6 +9,8 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DFSClient {
     private static Logger LOG = LoggerFactory.getLogger(DFSClient.class);
@@ -55,6 +58,8 @@ public class DFSClient {
         return masterService.getFile(file.getName());
     }
 
+
+
     public byte[] readChunk(DFSChunk chunk, long offset, int size){
         DFSNode[] nodes = chunk.getNodes();
         for(DFSNode node : nodes){
@@ -65,7 +70,42 @@ public class DFSClient {
                 e = exp;
             }
         }
-        LOG.error("can't read data from any replica");
+        LOG.error("can't read chunk data from any replica");
+        return null;
+    }
+
+    public long[] linesOffset(String fileName)
+            throws RemoteException{
+        DFSFile file = getFile(fileName);
+        if(file == null){
+            return null;
+        }
+        DFSChunk[] chunks = file.getChunks();
+        List<Long> offsets = new ArrayList<Long>();
+        for(DFSChunk chunk : chunks){
+            long[] chunkOffsets = linesOffset(chunk);
+            if(chunkOffsets == null)
+                return null;
+            for(long chunkOffset : chunkOffsets){
+                offsets.add(chunk.getOffset() + chunkOffset);
+            }
+        }
+        Long[] results = new Long[offsets.size()];
+        offsets.toArray(results);
+        return ArrayUtils.toPrimitive(results);
+    }
+
+    public long[] linesOffset(DFSChunk chunk){
+        DFSNode[] nodes = chunk.getNodes();
+        for(DFSNode node : nodes){
+            Exception e;
+            try{
+                return linesOffset(node, chunk.getId());
+            } catch (Exception exp){
+                e = exp;
+            }
+        }
+        LOG.error("can't read chunk data from any replica");
         return null;
     }
 
@@ -159,5 +199,11 @@ public class DFSClient {
             throws RemoteException, NotBoundException {
         DFSSlaveService slaveService = (DFSSlaveService) registry.lookup(dataNode.getServiceName());
         return slaveService.write(chunkId, offset, size, data);
+    }
+
+    private long[] linesOffset(DFSNode dataNode, long chunkId)
+            throws RemoteException, NotBoundException {
+        DFSSlaveService slaveService = (DFSSlaveService) registry.lookup(dataNode.getServiceName());
+        return slaveService.linesOffset(chunkId);
     }
 }

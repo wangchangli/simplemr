@@ -1,6 +1,8 @@
 package edu.cmu.courses.simplemr.mapreduce.io;
 
-public class FileBlock {
+import java.io.Serializable;
+
+public class FileBlock implements Serializable {
     private String file;
     private long offset;
     private long size;
