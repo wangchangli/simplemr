@@ -3,6 +3,7 @@ package edu.cmu.courses.simplemr.mapreduce.jobtracker;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import edu.cmu.courses.simplemr.Constants;
+import edu.cmu.courses.simplemr.Utils;
 import edu.cmu.courses.simplemr.mapreduce.JobClientService;
 import edu.cmu.courses.simplemr.mapreduce.JobConfig;
 import edu.cmu.courses.simplemr.mapreduce.common.MapReduceConstants;
@@ -18,6 +19,7 @@ import edu.cmu.courses.simplemr.mapreduce.tasktracker.TaskTrackerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.UnknownHostException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -27,8 +29,11 @@ import java.util.concurrent.*;
 public class JobTracker {
     private Logger LOG = LoggerFactory.getLogger(JobTracker.class);
 
-    @Parameter(names = {"-rh", "--registry-host"}, description = "the registry host")
-    private String registryHost = Constants.DEFAULT_REGISTRY_HOST;
+    @Parameter(names = {"-dh", "--dfs-master-registry-host"}, description = "the registry host of DFS master")
+    private String dfsMasterRegistryHost = Constants.DEFAULT_REGISTRY_HOST;
+
+    @Parameter(names = {"-dp", "--dfs-master-registry-port"}, description = "the registry port of DFS master")
+    private int dfsMasterRegistryPort = Constants.DEFAULT_REGISTRY_PORT;
 
     @Parameter(names = {"-rp", "--registry-port"}, description = "the registry port")
     private int registryPort = Constants.DEFAULT_REGISTRY_PORT;
@@ -100,6 +105,8 @@ public class JobTracker {
     public void dispatchMapperTask(MapperTask task){
         if(task.getStatus() == TaskStatus.PENDING){
             try {
+                TaskTrackerInfo taskTracker = taskTackers.get(task.getTaskTrackerName());
+                Registry registry = LocateRegistry.getRegistry(taskTracker.getHost(), taskTracker.getRegistryPort());
                 TaskTrackerService taskTrackerService = (TaskTrackerService)registry.lookup(task.getTaskTrackerName());
                 taskTrackerService.runMapperTask(task);
             } catch (Exception e) {
@@ -234,9 +241,9 @@ public class JobTracker {
     }
 
     private void bindService()
-            throws RemoteException {
+            throws RemoteException, UnknownHostException {
         service = new JobTrackerServiceImpl(this);
-        registry = LocateRegistry.getRegistry(registryHost, registryPort);
+        registry = LocateRegistry.getRegistry(Utils.getHost(), registryPort);
         registry.rebind(JobTrackerService.class.getCanonicalName(), service);
         registry.rebind(JobClientService.class.getCanonicalName(), new JobClientServiceImpl(this));
     }
@@ -254,13 +261,25 @@ public class JobTracker {
         }
     }
 
+    private List<FileBlock> splitInputFile(JobInfo job)
+            throws Exception {
+        DFSFileSplitter splitter = null;
+        try {
+            splitter = new DFSFileSplitter(dfsMasterRegistryHost, dfsMasterRegistryPort);
+            List<FileBlock> fileBlocks = splitter.split(job.getConfig().getInputFile(), job.getConfig().getMapperAmount());
+            if(fileBlocks.size() == 0){
+                throw new IllegalArgumentException("Invalid input file");
+            }
+            return fileBlocks;
+        } catch (Exception e){
+            job.setJobStatus(JobStatus.FAILED);
+            throw e;
+        }
+    }
+
     private void generateMapperTasks(JobInfo job)
             throws Exception {
-        DFSFileSplitter splitter = new DFSFileSplitter(registryHost, registryPort);
-        List<FileBlock> fileBlocks = splitter.split(job.getConfig().getInputFile(), job.getConfig().getMapperAmount());
-        if(fileBlocks.size() == 0){
-            throw new IllegalArgumentException("Invalid input file");
-        }
+        List<FileBlock> fileBlocks = splitInputFile(job);
         job.getConfig().setMapperAmount(fileBlocks.size());
         for(FileBlock fileBlock : fileBlocks){
             MapperTask task = new MapperTask(job.getId(), fileBlock, job.getConfig().getReducerAmount());
@@ -357,6 +376,8 @@ public class JobTracker {
     private void sendReducerTask(String taskTrackerName, MapperTask mapperTask, List<ReducerTask> reducerTasks) {
         TaskTrackerService taskTrackerService = null;
         try {
+            TaskTrackerInfo taskTracker = taskTackers.get(taskTrackerName);
+            Registry registry = LocateRegistry.getRegistry(taskTracker.getHost(), taskTracker.getRegistryPort());
             taskTrackerService = (TaskTrackerService)registry.lookup(taskTrackerName);
             taskTrackerService.runReducerTask(mapperTask, reducerTasks);
         } catch (Exception e) {

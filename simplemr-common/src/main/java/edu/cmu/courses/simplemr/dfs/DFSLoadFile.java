@@ -21,12 +21,12 @@ public class DFSLoadFile {
     private List<String> fileNames;
 
     @Parameter(names = {"-t", "--text"}, description = "Set this if the file is a text file")
-    private boolean isText = false;
+    private boolean isText = true;
 
-    @Parameter(names = {"-rh", "--registry-host"}, description = "The host of registry service")
+    @Parameter(names = {"-rh", "--master-registry-host"}, description = "The host of master registry service")
     private String registryHost = Constants.DEFAULT_REGISTRY_HOST;
 
-    @Parameter(names = {"-rp", "--registry-port"}, description = "The port of registry service")
+    @Parameter(names = {"-rp", "--master-registry-port"}, description = "The port of master registry service")
     private int registryPort = Constants.DEFAULT_REGISTRY_PORT;
 
     @Parameter(names = {"-r", "--replica"}, description = "The number of replicas")

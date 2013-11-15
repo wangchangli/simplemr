@@ -3,6 +3,7 @@ package edu.cmu.courses.simplemr.dfs.master;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import edu.cmu.courses.simplemr.Constants;
+import edu.cmu.courses.simplemr.Utils;
 import edu.cmu.courses.simplemr.dfs.DFSConstants;
 import edu.cmu.courses.simplemr.dfs.DFSMasterService;
 
@@ -12,9 +13,6 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
 public class DFSMaster {
-    @Parameter(names = {"-rh", "--registry-host"}, description = "The host of registry service")
-    private String registryHost = Constants.DEFAULT_REGISTRY_HOST;
-
     @Parameter(names = {"-rp", "--registry-port"}, description = "The port of registry service")
     private int registryPort = Constants.DEFAULT_REGISTRY_PORT;
 
@@ -38,16 +36,12 @@ public class DFSMaster {
         metaData = new DFSMetaData(this, editLogger);
         metaData.recoveryFromLog(editLogPath);
         service = new DFSMasterServiceImpl(metaData);
-        registry = LocateRegistry.getRegistry(registryHost, registryPort);
+        registry = LocateRegistry.getRegistry(Utils.getHost(), registryPort);
         registry.rebind(DFSMasterService.class.getCanonicalName(), service);
     }
 
     public boolean needHelp(){
         return help;
-    }
-
-    public String getRegistryHost(){
-        return registryHost;
     }
 
     public int getRegistryPort(){

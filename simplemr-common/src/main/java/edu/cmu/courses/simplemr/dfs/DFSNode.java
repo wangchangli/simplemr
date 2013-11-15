@@ -6,13 +6,25 @@ import java.io.Serializable;
 
 public class DFSNode implements Serializable, Comparable<DFSNode> {
     private String serviceName;
+    private String registryHost;
+    private int registryPort;
     private int chunkNumber;
     private long timestamp;
 
-    public DFSNode(String serviceName){
+    public DFSNode(String serviceName, String registryHost, int registryPort){
         this.serviceName = serviceName;
         this.timestamp = 0;
         this.chunkNumber = 0;
+        this.registryHost = registryHost;
+        this.registryPort = registryPort;
+    }
+
+    public String getRegistryHost() {
+        return registryHost;
+    }
+
+    public int getRegistryPort() {
+        return registryPort;
     }
 
     public String getServiceName() {
@@ -45,12 +57,12 @@ public class DFSNode implements Serializable, Comparable<DFSNode> {
 
     @Override
     public String toString(){
-        return serviceName;
+        return getServiceName();
     }
 
     @Override
     public int hashCode(){
-        return serviceName.hashCode();
+        return getServiceName().hashCode();
     }
 
     @Override
@@ -64,6 +76,6 @@ public class DFSNode implements Serializable, Comparable<DFSNode> {
 
     @Override
     public int compareTo(DFSNode dfsNode) {
-        return serviceName.hashCode() - dfsNode.getServiceName().hashCode();
+        return getServiceName().hashCode() - dfsNode.getServiceName().hashCode();
     }
 }

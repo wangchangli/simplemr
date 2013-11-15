@@ -39,19 +39,22 @@ public class DFSMetaData {
         this.gcPool = Executors.newFixedThreadPool(Constants.DEFAULT_THREAD_POOL_SIZE);
     }
 
-    public void updateDataNode(String serviceName,  int chunkNumber, long timestamp, boolean writeLog){
+    public void updateDataNode(String serviceName, String registryHost, int registryPort,
+                               int chunkNumber, long timestamp, boolean writeLog){
         DFSNode dataNode = null;
         synchronized (lock){
             if(dataNodes.containsKey(serviceName)){
                 dataNode = dataNodes.get(serviceName);
                 if(dataNode.getChunkNumber() != chunkNumber && writeLog){
-                    dispatchLog(EditOperation.UPDATE_DATA_NODE, new Object[] {serviceName, chunkNumber});
+                    dispatchLog(EditOperation.UPDATE_DATA_NODE,
+                            new Object[] {serviceName, registryHost, registryPort, chunkNumber});
                 }
             } else {
-                dataNode = new DFSNode(serviceName);
+                dataNode = new DFSNode(serviceName, registryHost, registryPort);
                 dataNodes.put(serviceName, dataNode);
                 if(writeLog){
-                    dispatchLog(EditOperation.UPDATE_DATA_NODE, new Object[] {serviceName, chunkNumber});
+                    dispatchLog(EditOperation.UPDATE_DATA_NODE,
+                            new Object[] {serviceName, registryHost, registryPort, chunkNumber});
                 }
             }
             dataNode.setChunkNumber(chunkNumber);
@@ -144,7 +147,8 @@ public class DFSMetaData {
                 Object[] arguments = operation.getArguments();
                 switch(operation.getType()){
                     case EditOperation.UPDATE_DATA_NODE:
-                        updateDataNode((String)arguments[0], (Integer)arguments[1], System.currentTimeMillis(), false);
+                        updateDataNode((String)arguments[0], (String)arguments[1], (Integer)arguments[2],
+                                       (Integer)arguments[3], System.currentTimeMillis(), false);
                         break;
                     case EditOperation.REMOVE_DATA_NODE:
                         removeDataNode((String)arguments[0], false);
@@ -202,7 +206,7 @@ public class DFSMetaData {
         for(DFSChunk chunk : chunkArray){
             chunks.remove(chunk);
             if(gc){
-                gcPool.execute(new DFSMasterGC(master.getRegistryHost(), master.getRegistryPort(), chunk));
+                gcPool.execute(new DFSMasterGC(chunk));
             }
         }
         files.remove(fileId);

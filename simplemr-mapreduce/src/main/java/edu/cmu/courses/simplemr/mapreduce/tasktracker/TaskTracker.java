@@ -4,7 +4,6 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import edu.cmu.courses.simplemr.Constants;
 import edu.cmu.courses.simplemr.Utils;
-import edu.cmu.courses.simplemr.mapreduce.Pair;
 import edu.cmu.courses.simplemr.mapreduce.common.MapReduceConstants;
 import edu.cmu.courses.simplemr.mapreduce.fileserver.FileServer;
 import edu.cmu.courses.simplemr.mapreduce.jobtracker.JobTrackerService;
@@ -15,6 +14,7 @@ import edu.cmu.courses.simplemr.mapreduce.task.TaskStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.UnknownHostException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -32,10 +32,19 @@ import java.util.concurrent.*;
 
 public class TaskTracker {
 
-    @Parameter(names = {"-rh", "--registry-host"}, description = "the registry host")
-    private String registryHost = Constants.DEFAULT_REGISTRY_HOST;
+    @Parameter(names = {"-dh", "--dfs-master-registry-host"}, description = "the registry host of DFS master")
+    private String dfsMasterRegistryHost = Constants.DEFAULT_REGISTRY_HOST;
 
-    @Parameter(names = {"-rp", "--registry-port"}, description = "the registry port")
+    @Parameter(names = {"-dp", "--dfs-master-registry-port"}, description = "the registry port of DFS master")
+    private int dfsMasterRegistryPort = Constants.DEFAULT_REGISTRY_PORT;
+
+    @Parameter(names = {"-jh", "--job-tracker-registry-host"}, description = "the registry host of job tracker")
+    private String jobTrackerRegistryHost = Constants.DEFAULT_REGISTRY_HOST;
+
+    @Parameter(names = {"-jp", "--job-tracker-registry-port"}, description = "the registry port of job tracker")
+    private int jobTrackerRegistryPort = Constants.DEFAULT_REGISTRY_PORT;
+
+    @Parameter(names = {"-rp", "--registry-port"}, description = "the local registry port")
     private int registryPort = Constants.DEFAULT_REGISTRY_PORT;
 
     @Parameter(names = {"-fp", "--file-server-port"}, description = "the port of file server")
@@ -59,28 +68,26 @@ public class TaskTracker {
     private static Logger LOG = LoggerFactory.getLogger(TaskTracker.class);
 
     private TaskTrackerInfo taskTrackerInfo;
-    private PriorityBlockingQueue<Pair<MapperTask, ReducerTask>> reducersQueue;
+    private ConcurrentHashMap<Integer, TaskTrackerReducerWorker> reducerWorkers;
 
     private TaskTrackerService taskTrackerService;
     private JobTrackerService jobTrackerService;
     private ExecutorService threadPool;
     private ScheduledExecutorService heartbeatPool;
-    private Registry registry;
+    private Registry jobTrackerRegistry;
 
     public TaskTracker(){
-        reducersQueue = new PriorityBlockingQueue<Pair<MapperTask, ReducerTask>>();
+        reducerWorkers = new ConcurrentHashMap<Integer, TaskTrackerReducerWorker>();
     }
 
     public void start()
             throws Exception {
-        taskTrackerInfo = new TaskTrackerInfo(Utils.getHost(), fileServerPort, invalidPeriod);
+        taskTrackerInfo = new TaskTrackerInfo(Utils.getHost(), registryPort, fileServerPort, invalidPeriod);
         threadPool = Executors.newFixedThreadPool(threadPoolSize);
         heartbeatPool = Executors.newScheduledThreadPool(Constants.DEFAULT_SCHEDULED_THREAD_POOL_SIZE);
         bindService();
         heartbeatPool.scheduleAtFixedRate(new TaskTrackerHeartbeat(this), 0, heartbeatPeriod, TimeUnit.MILLISECONDS);
         new FileServer(fileServerPort, tempDir).start();
-        Thread reducerDispatcher = new Thread(new TaskTrackerReducerDispatcher(this));
-        reducerDispatcher.start();
     }
 
     public void runMapperTask(MapperTask task){
@@ -94,21 +101,12 @@ public class TaskTracker {
 
     public void runReducerTask(MapperTask mapperTask, List<ReducerTask> reducerTasks){
         for(ReducerTask reducerTask : reducerTasks){
-            reducersQueue.offer(new Pair<MapperTask, ReducerTask>(mapperTask, reducerTask));
+            runReducerTask(mapperTask, reducerTask);
         }
     }
 
     public void increaseReducerTaskAmount(){
         taskTrackerInfo.increaseReducerTaskNumber();
-    }
-
-    public Pair<MapperTask, ReducerTask> takeReducerTask()
-            throws InterruptedException {
-        return reducersQueue.take();
-    }
-
-    public ExecutorService getThreadPool(){
-        return threadPool;
     }
 
     public void mapperSucceed(MapperTask task){
@@ -170,20 +168,28 @@ public class TaskTracker {
         }
     }
 
-    public String getRegistryHost() {
-        return registryHost;
+    public String getDfsMasterRegistryHost() {
+        return dfsMasterRegistryHost;
+    }
+
+    public int getDfsMasterRegistryPort() {
+        return dfsMasterRegistryPort;
+    }
+
+    public String getJobTrackerRegistryHost() {
+        return jobTrackerRegistryHost;
+    }
+
+    public int getJobTrackerRegistryPort() {
+        return jobTrackerRegistryPort;
     }
 
     public int getRegistryPort() {
         return registryPort;
     }
 
-    public String getTempDir(){
-        return tempDir;
-    }
-
-    public Registry getRegistry(){
-        return registry;
+    public Registry getJobTrackerRegistry(){
+        return jobTrackerRegistry;
     }
 
     public boolean needHelp(){
@@ -193,14 +199,18 @@ public class TaskTracker {
     private void bindService() {
         try{
             taskTrackerService = new TaskTrackerServiceImpl(this);
-            registry = LocateRegistry.getRegistry(registryHost, registryPort);
+            Registry registry = LocateRegistry.getRegistry(Utils.getHost(), registryPort);
             registry.rebind(taskTrackerInfo.toString(), taskTrackerService);
-            jobTrackerService = (JobTrackerService)registry.lookup(JobTrackerService.class.getCanonicalName());
+            jobTrackerRegistry = LocateRegistry.getRegistry(jobTrackerRegistryHost, jobTrackerRegistryPort);
+            jobTrackerService = (JobTrackerService)jobTrackerRegistry.lookup(JobTrackerService.class.getCanonicalName());
         } catch (RemoteException e){
             LOG.error("registry server error", e);
             System.exit(-1);
         } catch (NotBoundException e) {
             LOG.error("jobtracker not bind", e);
+            System.exit(-1);
+        } catch (UnknownHostException e) {
+            LOG.error("can't resolve host name", e);
             System.exit(-1);
         }
     }
@@ -208,6 +218,21 @@ public class TaskTracker {
     private void taskFinished(Task task){
         task.setTaskTrackerName(taskTrackerInfo.toString());
         task.deleteTaskFolder();
+    }
+
+    private void runReducerTask(MapperTask mapperTask, ReducerTask reducerTask){
+        TaskTrackerReducerWorker reducerWorker = new TaskTrackerReducerWorker(reducerTask, this);
+        TaskTrackerReducerWorker oldReducerWorker = reducerWorkers.putIfAbsent(reducerTask.getTaskId(), reducerWorker);
+        if(oldReducerWorker != null){
+            reducerWorker = oldReducerWorker;
+        } else {
+            reducerTask.setOutputDir(tempDir);
+            reducerWorker.createFolders();
+            increaseReducerTaskAmount();
+        }
+        reducerWorker.addMapperTask(mapperTask);
+        reducerWorker.updateReducerTask(reducerTask);
+        threadPool.execute(reducerWorker);
     }
 
     public static void main(String[] args) throws Exception {

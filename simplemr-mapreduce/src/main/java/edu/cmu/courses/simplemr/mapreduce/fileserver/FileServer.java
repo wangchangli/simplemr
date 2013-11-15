@@ -3,10 +3,15 @@ package edu.cmu.courses.simplemr.mapreduce.fileserver;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.net.BindException;
 
 public class FileServer {
+    private static Logger LOG = LoggerFactory.getLogger(FileServer.class);
+
     private int port;
     private String fileDir;
 
@@ -32,6 +37,11 @@ public class FileServer {
         context.setContextPath("/");
         context.addServlet(new ServletHolder(new FileHandler(fileDir)), "/*");
         server.setHandler(context);
-        server.start();
+        try{
+            server.start();
+        } catch (BindException e){
+            LOG.error("bind error, address already in use");
+            System.exit(-1);
+        }
     }
 }

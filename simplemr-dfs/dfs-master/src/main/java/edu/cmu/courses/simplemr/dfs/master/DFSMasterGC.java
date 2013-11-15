@@ -16,21 +16,17 @@ public class DFSMasterGC implements Runnable{
     private static Logger LOG = LoggerFactory.getLogger(DFSMasterGC.class);
 
     private DFSChunk chunk;
-    private String registryHost;
-    private int registryPort;
 
-    public DFSMasterGC(String registryHost, int registryPort, DFSChunk chunk){
+    public DFSMasterGC(DFSChunk chunk){
         this.chunk = chunk;
-        this.registryHost = registryHost;
-        this.registryPort = registryPort;
     }
 
     @Override
     public void run() {
         DFSNode[] nodes = chunk.getNodes();
         try {
-            Registry registry = LocateRegistry.getRegistry(registryHost, registryPort);
             for(DFSNode node : nodes){
+                Registry registry = LocateRegistry.getRegistry(node.getRegistryHost(), node.getRegistryPort());
                 DFSSlaveService slaveService = (DFSSlaveService) registry.lookup(node.getServiceName());
                 slaveService.delete(chunk.getId());
             }

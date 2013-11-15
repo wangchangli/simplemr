@@ -31,6 +31,9 @@ public class TaskTrackerReducerWorker extends TaskTrackerWorker {
         this.mapperFiles = new ConcurrentHashMap<Integer, String>();
         this.mapperLocks = new ConcurrentHashMap<Integer, Integer>();
         this.finished = false;
+    }
+
+    public void createFolders(){
         task.createTaskFolder();
         String mapperResultsPath = task.getTaskFolderName() + Constants.FILE_SEPARATOR + MAPPER_RESULTS_DIR;
         File mapperResultsFolder = new File(getAbsolutePath(mapperResultsPath));
@@ -186,7 +189,8 @@ public class TaskTrackerReducerWorker extends TaskTrackerWorker {
 
     private void saveResultToDFS(String localFile)
             throws Exception {
-        DFSClient dfsClient = new DFSClient(taskTracker.getRegistryHost(), taskTracker.getRegistryPort());
+        DFSClient dfsClient = new DFSClient(taskTracker.getDfsMasterRegistryHost(),
+                                            taskTracker.getDfsMasterRegistryPort());
         dfsClient.connect();
         dfsClient.writeText(localFile, ((ReducerTask)task).getReplicas(), ((ReducerTask)task).getLineCount());
     }
