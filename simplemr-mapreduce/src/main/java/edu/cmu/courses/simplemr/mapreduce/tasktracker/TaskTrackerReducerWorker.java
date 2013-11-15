@@ -31,6 +31,9 @@ public class TaskTrackerReducerWorker extends TaskTrackerWorker {
         this.mapperFiles = new ConcurrentHashMap<Integer, String>();
         this.mapperLocks = new ConcurrentHashMap<Integer, Integer>();
         this.finished = false;
+    }
+
+    public void createFolders(){
         task.createTaskFolder();
         String mapperResultsPath = task.getTaskFolderName() + Constants.FILE_SEPARATOR + MAPPER_RESULTS_DIR;
         File mapperResultsFolder = new File(getAbsolutePath(mapperResultsPath));

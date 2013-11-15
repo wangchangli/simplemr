@@ -13,7 +13,7 @@ public class DFSLoadFile {
     private List<String> fileNames;
 
     @Parameter(names = {"-t", "--text"}, description = "Set this if the file is a text file")
-    private boolean isText = false;
+    private boolean isText = true;
 
     @Parameter(names = {"-rh", "--registry-host"}, description = "The host of registry service")
     private String registryHost = Constants.DEFAULT_REGISTRY_HOST;

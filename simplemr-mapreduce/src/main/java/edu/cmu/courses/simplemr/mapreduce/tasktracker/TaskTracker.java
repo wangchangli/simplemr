@@ -4,7 +4,6 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import edu.cmu.courses.simplemr.Constants;
 import edu.cmu.courses.simplemr.Utils;
-import edu.cmu.courses.simplemr.mapreduce.Pair;
 import edu.cmu.courses.simplemr.mapreduce.common.MapReduceConstants;
 import edu.cmu.courses.simplemr.mapreduce.fileserver.FileServer;
 import edu.cmu.courses.simplemr.mapreduce.jobtracker.JobTrackerService;
@@ -51,7 +50,7 @@ public class TaskTracker {
     private static Logger LOG = LoggerFactory.getLogger(TaskTracker.class);
 
     private TaskTrackerInfo taskTrackerInfo;
-    private PriorityBlockingQueue<Pair<MapperTask, ReducerTask>> reducersQueue;
+    private ConcurrentHashMap<Integer, TaskTrackerReducerWorker> reducerWorkers;
 
     private TaskTrackerService taskTrackerService;
     private JobTrackerService jobTrackerService;
@@ -60,7 +59,7 @@ public class TaskTracker {
     private Registry registry;
 
     public TaskTracker(){
-        reducersQueue = new PriorityBlockingQueue<Pair<MapperTask, ReducerTask>>();
+        reducerWorkers = new ConcurrentHashMap<Integer, TaskTrackerReducerWorker>();
     }
 
     public void start()
@@ -71,8 +70,6 @@ public class TaskTracker {
         bindService();
         heartbeatPool.scheduleAtFixedRate(new TaskTrackerHeartbeat(this), 0, heartbeatPeriod, TimeUnit.MILLISECONDS);
         new FileServer(fileServerPort, tempDir).start();
-        Thread reducerDispatcher = new Thread(new TaskTrackerReducerDispatcher(this));
-        reducerDispatcher.start();
     }
 
     public void runMapperTask(MapperTask task){
@@ -86,21 +83,12 @@ public class TaskTracker {
 
     public void runReducerTask(MapperTask mapperTask, List<ReducerTask> reducerTasks){
         for(ReducerTask reducerTask : reducerTasks){
-            reducersQueue.offer(new Pair<MapperTask, ReducerTask>(mapperTask, reducerTask));
+            runReducerTask(mapperTask, reducerTask);
         }
     }
 
     public void increaseReducerTaskAmount(){
         taskTrackerInfo.increaseReducerTaskNumber();
-    }
-
-    public Pair<MapperTask, ReducerTask> takeReducerTask()
-            throws InterruptedException {
-        return reducersQueue.take();
-    }
-
-    public ExecutorService getThreadPool(){
-        return threadPool;
     }
 
     public void mapperSucceed(MapperTask task){
@@ -170,10 +158,6 @@ public class TaskTracker {
         return registryPort;
     }
 
-    public String getTempDir(){
-        return tempDir;
-    }
-
     public Registry getRegistry(){
         return registry;
     }
@@ -200,6 +184,21 @@ public class TaskTracker {
     private void taskFinished(Task task){
         task.setTaskTrackerName(taskTrackerInfo.toString());
         task.deleteTaskFolder();
+    }
+
+    private void runReducerTask(MapperTask mapperTask, ReducerTask reducerTask){
+        TaskTrackerReducerWorker reducerWorker = new TaskTrackerReducerWorker(reducerTask, this);
+        TaskTrackerReducerWorker oldReducerWorker = reducerWorkers.putIfAbsent(reducerTask.getTaskId(), reducerWorker);
+        if(oldReducerWorker != null){
+            reducerWorker = oldReducerWorker;
+        } else {
+            reducerTask.setOutputDir(tempDir);
+            reducerWorker.createFolders();
+            increaseReducerTaskAmount();
+        }
+        reducerWorker.addMapperTask(mapperTask);
+        reducerWorker.updateReducerTask(reducerTask);
+        threadPool.execute(reducerWorker);
     }
 
     public static void main(String[] args) throws Exception {

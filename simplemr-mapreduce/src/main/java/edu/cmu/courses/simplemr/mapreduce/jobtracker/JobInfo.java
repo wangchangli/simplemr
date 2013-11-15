@@ -133,7 +133,7 @@ public class JobInfo implements Comparable<JobInfo>{
     private JobStatus checkJobStatus(){
         boolean failure = false;
         boolean pending = false;
-        if(status == JobStatus.INITIALIZING){
+        if(status != JobStatus.PENDING){
             return status;
         }
         for(Task task : getMapperTasks()){

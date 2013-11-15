@@ -18,6 +18,7 @@ import edu.cmu.courses.simplemr.mapreduce.tasktracker.TaskTrackerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -254,13 +255,25 @@ public class JobTracker {
         }
     }
 
+    private List<FileBlock> splitInputFile(JobInfo job)
+            throws Exception {
+        DFSFileSplitter splitter = null;
+        try {
+            splitter = new DFSFileSplitter(registryHost, registryPort);
+            List<FileBlock> fileBlocks = splitter.split(job.getConfig().getInputFile(), job.getConfig().getMapperAmount());
+            if(fileBlocks.size() == 0){
+                throw new IllegalArgumentException("Invalid input file");
+            }
+            return fileBlocks;
+        } catch (Exception e){
+            job.setJobStatus(JobStatus.FAILED);
+            throw e;
+        }
+    }
+
     private void generateMapperTasks(JobInfo job)
             throws Exception {
-        DFSFileSplitter splitter = new DFSFileSplitter(registryHost, registryPort);
-        List<FileBlock> fileBlocks = splitter.split(job.getConfig().getInputFile(), job.getConfig().getMapperAmount());
-        if(fileBlocks.size() == 0){
-            throw new IllegalArgumentException("Invalid input file");
-        }
+        List<FileBlock> fileBlocks = splitInputFile(job);
         job.getConfig().setMapperAmount(fileBlocks.size());
         for(FileBlock fileBlock : fileBlocks){
             MapperTask task = new MapperTask(job.getId(), fileBlock, job.getConfig().getReducerAmount());
