@@ -2,5 +2,5 @@
 
 base=`dirname $0`/..
 export CLASSPATH=$base/lib/*:$base/jars/simplemr-examples-1.0.jar:$CLASSPATH
-java edu.cmu.courses.simplemr.examples.WordCount $@
+java edu.cmu.courses.simplemr.examples.WordCount -n wordcount $@
 

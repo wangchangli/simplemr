@@ -24,7 +24,7 @@ public class JobInfo implements Comparable<JobInfo>{
     public JobInfo(JobConfig jobConfig){
         this.id = maxId.getAndIncrement();
         this.config = jobConfig;
-        this.status = JobStatus.PENDING;
+        this.status = JobStatus.INITIALIZING;
         this.mapperTasks = new TreeMap<Integer, MapperTask>();
         this.reducerTasks = new TreeMap<Integer, ReducerTask>();
     }
@@ -133,6 +133,9 @@ public class JobInfo implements Comparable<JobInfo>{
     private JobStatus checkJobStatus(){
         boolean failure = false;
         boolean pending = false;
+        if(status == JobStatus.INITIALIZING){
+            return status;
+        }
         for(Task task : getMapperTasks()){
             if(task.getStatus() == TaskStatus.PENDING){
                 pending = true;

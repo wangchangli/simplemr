@@ -29,9 +29,7 @@ public class Job {
             jobClient = (JobClientService) registry.lookup(JobClientService.class.getCanonicalName());
             Pair<String, Integer> fileServerInfo = jobClient.getFileServerInfo();
             Utils.postClassFile(fileServerInfo.getKey(), fileServerInfo.getValue(), mapReduceClass);
-            if(!jobClient.submitJob(jobConfig)){
-                LOG.error("job submit failed");
-            }
+            jobClient.submitJob(jobConfig);
         } catch (RemoteException e) {
             LOG.error("failed to run mapreduce job", e);
         } catch (NotBoundException e) {

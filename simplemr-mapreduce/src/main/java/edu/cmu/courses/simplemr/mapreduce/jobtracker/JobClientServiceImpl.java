@@ -30,14 +30,8 @@ public class JobClientServiceImpl extends UnicastRemoteObject implements JobClie
     }
 
     @Override
-    public boolean submitJob(JobConfig jobConfig) throws RemoteException {
-        try {
-            jobTracker.submitJob(jobConfig);
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
+    public void submitJob(JobConfig jobConfig) throws RemoteException {
+        jobTracker.submitJob(jobConfig);
     }
 
     @Override

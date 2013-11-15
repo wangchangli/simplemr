@@ -52,6 +52,7 @@ public class JobTracker {
     private ConcurrentHashMap<Integer, JobInfo> jobs;
     private PriorityBlockingQueue<MapperTask> mapperTasksQueue;
     private ScheduledExecutorService periodicalChecker;
+    private ExecutorService threadPool;
     private JobTrackerService service;
     private Thread scheduler;
     private Registry registry;
@@ -61,6 +62,7 @@ public class JobTracker {
         jobs = new ConcurrentHashMap<Integer, JobInfo>();
         mapperTasksQueue = new PriorityBlockingQueue<MapperTask>();
         periodicalChecker = Executors.newScheduledThreadPool(Constants.DEFAULT_SCHEDULED_THREAD_POOL_SIZE);
+        threadPool = Executors.newFixedThreadPool(threadPoolSize);
     }
 
     public void start()
@@ -71,14 +73,28 @@ public class JobTracker {
         startScheduler();
     }
 
-    public void submitJob(JobConfig jobConfig)
-            throws Exception {
+    public void submitJob(JobConfig jobConfig) {
         jobConfig.validate();
         JobInfo job = new JobInfo(jobConfig);
         jobs.put(job.getId(), job);
-        generateMapperTasks(job);
-        generateReducerTasks(job);
-        dispatchMapperTasks(job);
+        threadPool.execute(new JobTrackerWorker(this, job.getId()));
+    }
+
+    public void startJob(int jobId)
+            throws Exception{
+        JobInfo job = jobs.get(jobId);
+        if(job != null){
+            generateMapperTasks(job);
+            generateReducerTasks(job);
+            dispatchMapperTasks(job);
+        }
+    }
+
+    public void startJobFailed(int jobId){
+        JobInfo job = jobs.get(jobId);
+        if(job != null){
+            job.setJobStatus(JobStatus.FAILED);
+        }
     }
 
     public void dispatchMapperTask(MapperTask task){
@@ -284,6 +300,7 @@ public class JobTracker {
 
     private void dispatchMapperTasks(JobInfo job){
         List<MapperTask> mapperTasks = job.getMapperTasks();
+        job.setJobStatus(JobStatus.PENDING);
         for(MapperTask mapperTask : mapperTasks){
             mapperTasksQueue.offer(mapperTask);
         }
