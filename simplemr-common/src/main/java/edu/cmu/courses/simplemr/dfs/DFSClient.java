@@ -16,19 +16,19 @@ public class DFSClient {
     private static Logger LOG = LoggerFactory.getLogger(DFSClient.class);
 
     private DFSMasterService masterService;
-    private String registryHost;
-    private int registryPort;
-    private Registry registry;
+    private String masterRegistryHost;
+    private int masterRegistryPort;
+    private Registry masterRegistry;
 
-    public DFSClient(String registryHost, int registryPort){
-        this.registryHost = registryHost;
-        this.registryPort = registryPort;
+    public DFSClient(String masterRegistryHost, int masterRegistryPort){
+        this.masterRegistryHost = masterRegistryHost;
+        this.masterRegistryPort = masterRegistryPort;
     }
 
     public void connect()
             throws RemoteException, NotBoundException {
-        registry = LocateRegistry.getRegistry(registryHost, registryPort);
-        masterService = (DFSMasterService)registry.lookup(DFSMasterService.class.getCanonicalName());
+        masterRegistry = LocateRegistry.getRegistry(masterRegistryHost, masterRegistryPort);
+        masterService = (DFSMasterService)masterRegistry.lookup(DFSMasterService.class.getCanonicalName());
     }
 
     public DFSFile createFile(String fileName, int replicas)
@@ -191,18 +191,21 @@ public class DFSClient {
 
     private byte[] readChunk(DFSNode dataNode, long chunkId, long offset, int size)
             throws RemoteException, NotBoundException {
+        Registry registry = LocateRegistry.getRegistry(dataNode.getRegistryHost(), dataNode.getRegistryPort());
         DFSSlaveService slaveService = (DFSSlaveService) registry.lookup(dataNode.getServiceName());
         return slaveService.read(chunkId, offset, size);
     }
 
     private boolean writeChunk(DFSNode dataNode, long chunkId, long offset, int size, byte[] data)
             throws RemoteException, NotBoundException {
+        Registry registry = LocateRegistry.getRegistry(dataNode.getRegistryHost(), dataNode.getRegistryPort());
         DFSSlaveService slaveService = (DFSSlaveService) registry.lookup(dataNode.getServiceName());
         return slaveService.write(chunkId, offset, size, data);
     }
 
     private long[] linesOffset(DFSNode dataNode, long chunkId)
             throws RemoteException, NotBoundException {
+        Registry registry = LocateRegistry.getRegistry(dataNode.getRegistryHost(), dataNode.getRegistryPort());
         DFSSlaveService slaveService = (DFSSlaveService) registry.lookup(dataNode.getServiceName());
         return slaveService.linesOffset(chunkId);
     }

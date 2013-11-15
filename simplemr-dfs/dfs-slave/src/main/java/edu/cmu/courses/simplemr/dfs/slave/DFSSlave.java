@@ -3,12 +3,14 @@ package edu.cmu.courses.simplemr.dfs.slave;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import edu.cmu.courses.simplemr.Constants;
+import edu.cmu.courses.simplemr.Utils;
 import edu.cmu.courses.simplemr.dfs.DFSConstants;
 import edu.cmu.courses.simplemr.dfs.DFSMasterService;
 import edu.cmu.courses.simplemr.dfs.DFSSlaveService;
 import org.apache.commons.lang.ArrayUtils;
 
 import java.io.*;
+import java.net.UnknownHostException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -21,11 +23,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 public class DFSSlave {
+    @Parameter(names = {"-mh", "--master-registry-host"}, description = "The master registry host")
+    private String masterRegistryHost = Constants.DEFAULT_REGISTRY_HOST;
 
-    @Parameter(names = {"-rh", "--registry-host"}, description = "The host of registry service")
-    private String registryHost = Constants.DEFAULT_REGISTRY_HOST;
+    @Parameter(names = {"-mp", "--master-registry-port"}, description = "The port of local registry service")
+    private int masterRegistryPort = Constants.DEFAULT_REGISTRY_PORT;
 
-    @Parameter(names = {"-rp", "--registry-port"}, description = "The port of registry service")
+    @Parameter(names = {"-rp", "--registry-port"}, description = "The port of local registry service")
     private int registryPort = Constants.DEFAULT_REGISTRY_PORT;
 
     @Parameter(names = {"-n", "--name"}, description = "The name of slave node", required = true)
@@ -42,19 +46,19 @@ public class DFSSlave {
 
     private DFSSlaveService slaveService;
     private DFSMasterService masterService;
-    private Registry registry;
     private ScheduledExecutorService heartbeatService;
 
     public void start()
-            throws RemoteException, NotBoundException {
+            throws RemoteException, NotBoundException, UnknownHostException {
         dataDir = dataDir + System.getProperty("file.separator") + serviceName;
         File dataDirFile = new File(dataDir);
         if(!dataDirFile.exists()){
             dataDirFile.mkdirs();
         }
         slaveService = new DFSSlaveServiceImpl(this);
-        registry = LocateRegistry.getRegistry(registryHost, registryPort);
+        Registry registry = LocateRegistry.getRegistry(Utils.getHost(), registryPort);
         registry.rebind(serviceName, slaveService);
+        registry = LocateRegistry.getRegistry(masterRegistryHost, masterRegistryPort);
         masterService = (DFSMasterService) registry.lookup(DFSMasterService.class.getCanonicalName());
         heartbeatService = Executors.newScheduledThreadPool(Constants.DEFAULT_SCHEDULED_THREAD_POOL_SIZE);
         heartbeatService.scheduleAtFixedRate(new DFSSlaveHeartbeatWorker(this, registry),
@@ -128,6 +132,10 @@ public class DFSSlave {
 
     public boolean needHelp(){
         return help;
+    }
+
+    public int getRegistryPort(){
+        return registryPort;
     }
 
     private String getFilePath(long chunkId){

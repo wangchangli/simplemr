@@ -8,10 +8,10 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 
 public class DFSListFiles {
-    @Parameter(names = {"-rh", "--registry-host"}, description = "The host of registry service")
+    @Parameter(names = {"-rh", "--master-registry-host"}, description = "The host of master registry service")
     private String registryHost = Constants.DEFAULT_REGISTRY_HOST;
 
-    @Parameter(names = {"-rp", "--registry-port"}, description = "The port of registry service")
+    @Parameter(names = {"-rp", "--master-registry-port"}, description = "The port of master registry service")
     private int registryPort = Constants.DEFAULT_REGISTRY_PORT;
 
     @Parameter(names = {"-h", "--help"}, help = true)

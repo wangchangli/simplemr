@@ -4,7 +4,7 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 public interface DFSMasterService extends Remote {
-    public void heartbeat(String serviceName, int chunkNumber) throws RemoteException;
+    public void heartbeat(String serviceName, String registryHost, int registryPort, int chunkNumber) throws RemoteException;
     public DFSFile createFile(String fileName, int replicas) throws RemoteException;
     public DFSFile getFile(String fileName) throws RemoteException;
     public DFSFile[] listFiles() throws RemoteException;

@@ -2,4 +2,4 @@
 
 base=`dirname $0`/..
 export CLASSPATH=$base/lib/simplemr-common-1.0.jar:$base/jars/simplemr-mapreduce-1.0.jar:$CLASSPATH 
-rmiregistry $@
+rmiregistry $@ 10999
