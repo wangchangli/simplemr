@@ -7,6 +7,13 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Split a file in distributed file system.
+ *
+ * @author Jian Fang(jianf)
+ * @author Fangyu Gao(fangyug)
+ */
+
 public class DFSFileSplitter implements FileSplitter {
 
     private DFSClient dfsClient;

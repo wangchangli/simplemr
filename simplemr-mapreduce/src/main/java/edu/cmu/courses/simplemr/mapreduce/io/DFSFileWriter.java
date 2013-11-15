@@ -6,6 +6,13 @@ import edu.cmu.courses.simplemr.dfs.DFSFile;
 
 import java.io.IOException;
 
+/**
+ * Write to distributed file system.
+ *
+ * @author Jian Fang(jianf)
+ * @author Fangyu Gao(fangyug)
+ */
+
 public class DFSFileWriter extends FileWriter {
 
     private int lineCount;

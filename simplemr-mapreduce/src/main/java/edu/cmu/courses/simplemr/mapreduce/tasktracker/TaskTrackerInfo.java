@@ -12,6 +12,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+/**
+ * Include all the information about Task Tracker.
+ *
+ * @author Jian Fang(jianf)
+ * @author Fangyu Gao(fangyug)
+ */
+
 public class TaskTrackerInfo implements Serializable{
     private String host;
     private int fileServerPort;

@@ -8,6 +8,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+/**
+ * Load the .class file using HTTP
+ *
+ * @author Jian Fang(jianf)
+ * @author Fangyu Gao(fangyug)
+ */
+
 public class RemoteClassLoader extends ClassLoader {
     public Class<?> loadRemoteClass(String host, int port, String className)
             throws IOException, ClassNotFoundException {

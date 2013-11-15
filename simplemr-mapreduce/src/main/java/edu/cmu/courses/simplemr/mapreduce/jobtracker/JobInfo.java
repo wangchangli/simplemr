@@ -12,6 +12,13 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * Include all the information about Task Tracker.
+ *
+ * @author Jian Fang(jianf)
+ * @author Fangyu Gao(fangyug)
+ */
+
 public class JobInfo implements Comparable<JobInfo>{
     private static AtomicInteger maxId = new AtomicInteger(0);
 

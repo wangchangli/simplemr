@@ -4,6 +4,13 @@ package edu.cmu.courses.simplemr.mapreduce.io;
 import java.io.BufferedWriter;
 import java.io.IOException;
 
+/**
+ * Write to local file system.
+ *
+ * @author Jian Fang(jianf)
+ * @author Fangyu Gao(fangyug)
+ */
+
 public class LocalFileWriter extends FileWriter {
     BufferedWriter writer;
     public LocalFileWriter(String fileName) throws IOException {

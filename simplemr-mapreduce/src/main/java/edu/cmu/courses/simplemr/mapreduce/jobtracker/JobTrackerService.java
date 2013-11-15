@@ -8,6 +8,14 @@ import edu.cmu.courses.simplemr.mapreduce.tasktracker.TaskTrackerInfo;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
+/**
+ * The service interface that a Job tracker can provide to client to call
+ * and task tracker to return. It extends the Remote interface to be called by RMI.
+ *
+ * @author Jian Fang(jianf)
+ * @author Fangyu Gao(fangyug)
+ */
+
 public interface JobTrackerService extends Remote{
     public void heartbeat(TaskTrackerInfo taskTrackerInfo) throws RemoteException;
     public void mapperTaskSucceed(MapperTask task) throws RemoteException;

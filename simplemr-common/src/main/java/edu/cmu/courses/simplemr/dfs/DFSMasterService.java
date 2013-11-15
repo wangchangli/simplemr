@@ -3,6 +3,14 @@ package edu.cmu.courses.simplemr.dfs;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
+/**
+ * The service interface that a DFS master can provide to DFS client.
+ * It extends the Remote interface to be called by RMI.
+ *
+ * @author Jian Fang(jianf)
+ * @author Fangyu Gao(fangyug)
+ */
+
 public interface DFSMasterService extends Remote {
     public void heartbeat(String serviceName, int chunkNumber) throws RemoteException;
     public DFSFile createFile(String fileName, int replicas) throws RemoteException;

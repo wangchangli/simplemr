@@ -8,6 +8,14 @@ import java.io.IOException;
 import java.rmi.NotBoundException;
 import java.util.List;
 
+/**
+ * The "dfs-load" operation in distributed file system.
+ * Load a file from local file system sto DFS.
+ *
+ * @author Jian Fang(jianf)
+ * @author Fangyu Gao(fangyug)
+ */
+
 public class DFSLoadFile {
     @Parameter(required = true, description = "filename")
     private List<String> fileNames;

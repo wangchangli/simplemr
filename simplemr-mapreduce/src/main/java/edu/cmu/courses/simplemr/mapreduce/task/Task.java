@@ -7,6 +7,13 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * The Task superclass. The job tracker deliver a task to the task
+ * tracker to let task tracker do the task.
+ *
+ * @author Jian Fang(jianf)
+ * @author Fangyu Gao(fangyug)
+ */
 public abstract class Task implements Serializable, Comparable<Task>{
 
     private static AtomicInteger maxId = new AtomicInteger();

@@ -7,6 +7,13 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicLong;
 
+/**
+ * Representing a file in distributed file system.
+ *
+ * @author Jian Fang(jianf)
+ * @author Fangyu Gao(fangyug)
+ */
+
 public class DFSFile implements Serializable {
     public static AtomicLong maxId = new AtomicLong(0);
 

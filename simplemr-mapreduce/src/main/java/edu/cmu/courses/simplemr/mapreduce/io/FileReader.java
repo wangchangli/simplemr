@@ -1,5 +1,12 @@
 package edu.cmu.courses.simplemr.mapreduce.io;
 
+/**
+ * Abstract super class of DFS File Reader.
+ *
+ * @author Jian Fang(jianf)
+ * @author Fangyu Gao(fangyug)
+ */
+
 public abstract class FileReader {
     protected FileBlock fileBlock;
 

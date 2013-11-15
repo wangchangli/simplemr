@@ -2,6 +2,13 @@ package edu.cmu.courses.simplemr.mapreduce.io;
 
 import java.io.Serializable;
 
+/**
+ * Define a block of file.
+ *
+ * @author Jian Fang(jianf)
+ * @author Fangyu Gao(fangyug)
+ */
+
 public class FileBlock implements Serializable {
     private String file;
     private long offset;

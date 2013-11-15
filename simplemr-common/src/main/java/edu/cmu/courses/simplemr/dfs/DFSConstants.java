@@ -1,5 +1,13 @@
 package edu.cmu.courses.simplemr.dfs;
 
+
+/**
+ * Constants used in distributed file system.
+ *
+ * @author Jian Fang(jianf)
+ * @author Fangyu Gao(fangyug)
+ */
+
 public class DFSConstants {
     public static final int DEFAULT_REPLICA_NUMBER = 3;
     public static final int DEFAULT_BLOCK_SIZE = (1 << 20);

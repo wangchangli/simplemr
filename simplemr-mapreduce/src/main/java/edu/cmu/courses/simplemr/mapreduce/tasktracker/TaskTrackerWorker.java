@@ -11,6 +11,15 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
 
+/**
+ * The super class for either map or reduce worker, it implements
+ * Runnable interface, and define the common load class method to
+ * load class file wrote by the MapReduce user.
+ *
+ * @author Jian Fang(jianf)
+ * @author Fangyu Gao(fangyug)
+ */
+
 public abstract class TaskTrackerWorker implements Runnable {
     protected Task task;
     protected TaskTracker taskTracker;
