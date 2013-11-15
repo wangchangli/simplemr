@@ -9,7 +9,6 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 public interface JobTrackerService extends Remote{
-    public boolean submitJob(JobConfig jobConfig) throws RemoteException;
     public void heartbeat(TaskTrackerInfo taskTrackerInfo) throws RemoteException;
     public void mapperTaskSucceed(MapperTask task) throws RemoteException;
     public void reducerTaskSucceed(ReducerTask task) throws RemoteException;

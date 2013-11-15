@@ -1,6 +1,8 @@
 package edu.cmu.courses.simplemr.mapreduce;
 
-public class Pair<K, V> implements Comparable<Pair> {
+import java.io.Serializable;
+
+public class Pair<K, V> implements Serializable, Comparable<Pair> {
     private K key;
     private V value;
 

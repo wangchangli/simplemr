@@ -3,6 +3,7 @@ package edu.cmu.courses.simplemr.mapreduce.jobtracker;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import edu.cmu.courses.simplemr.Constants;
+import edu.cmu.courses.simplemr.mapreduce.JobClientService;
 import edu.cmu.courses.simplemr.mapreduce.JobConfig;
 import edu.cmu.courses.simplemr.mapreduce.common.MapReduceConstants;
 import edu.cmu.courses.simplemr.mapreduce.fileserver.FileServer;
@@ -110,7 +111,7 @@ public class JobTracker {
     public void mapperTaskSucceed(MapperTask task){
         JobInfo job = jobs.get(task.getJobId());
         if(!taskExpire(job, task)){
-            LOG.info("mapper task " + task.getTaskId() + " job " + task.getJobId() + " succeed");
+            LOG.debug("mapper task " + task.getTaskId() + " job " + task.getJobId() + " succeed");
             Task myTask = job.getTask(task.getTaskId());
             myTask.setStatus(TaskStatus.SUCCEED);
             sendReducerTask(job, task);
@@ -122,14 +123,14 @@ public class JobTracker {
         if(!taskExpire(job, task)){
             Task myTask = job.getTask(task.getTaskId());
             if(myTask.getAttemptCount() >= job.getConfig().getMaxAttemptCount()){
-                LOG.info("mapper task " + task.getTaskId() + " job " + task.getJobId() + " failed");
+                LOG.debug("mapper task " + task.getTaskId() + " job " + task.getJobId() + " failed");
                 myTask.setStatus(TaskStatus.FAILED);
             } else {
                 if(!migrateTaskTracker(task)){
-                    LOG.info("mapper task " + task.getTaskId() + " job " + task.getJobId() + " failed");
+                    LOG.debug("mapper task " + task.getTaskId() + " job " + task.getJobId() + " failed");
                     myTask.setStatus(TaskStatus.FAILED);
                 } else {
-                    LOG.info("mapper task " + task.getTaskId() + " job " + task.getJobId() + " retrying");
+                    LOG.debug("mapper task " + task.getTaskId() + " job " + task.getJobId() + " retrying");
                     myTask.increaseAttemptCount();
                     myTask.setStatus(TaskStatus.PENDING);
                     mapperTasksQueue.offer((MapperTask) myTask);
@@ -141,7 +142,7 @@ public class JobTracker {
     public void reducerTaskSucceed(ReducerTask task){
         JobInfo job = jobs.get(task.getJobId());
         if(!taskExpire(job, task)){
-            LOG.info("reducer task " + task.getTaskId() + " job " + task.getJobId() + " succeed");
+            LOG.debug("reducer task " + task.getTaskId() + " job " + task.getJobId() + " succeed");
             Task myTask = job.getTask(task.getTaskId());
             myTask.setStatus(TaskStatus.SUCCEED);
         }
@@ -152,14 +153,14 @@ public class JobTracker {
         if(!taskExpire(job, task)){
             Task myTask = job.getTask(task.getTaskId());
             if(myTask.getAttemptCount() >= job.getConfig().getMaxAttemptCount()){
-                LOG.info("reducer task " + task.getTaskId() + " job " + task.getJobId() + " failed");
+                LOG.debug("reducer task " + task.getTaskId() + " job " + task.getJobId() + " failed");
                 myTask.setStatus(TaskStatus.FAILED);
             } else {
                 if(!migrateTaskTracker(task)){
-                    LOG.info("reducer task " + task.getTaskId() + " job " + task.getJobId() + " failed");
+                    LOG.debug("reducer task " + task.getTaskId() + " job " + task.getJobId() + " failed");
                     myTask.setStatus(TaskStatus.FAILED);
                 } else {
-                    LOG.info("reducer task " + task.getTaskId() + " job " + task.getJobId() + " retrying");
+                    LOG.debug("reducer task " + task.getTaskId() + " job " + task.getJobId() + " retrying");
                     myTask.increaseAttemptCount();
                     myTask.setStatus(TaskStatus.PENDING);
                     List<MapperTask> mapperTasks = job.getMapperTasks();
@@ -174,7 +175,7 @@ public class JobTracker {
     public void reducerTaskFailedOnMapper(ReducerTask reducerTask, MapperTask mapperTask){
         JobInfo job = jobs.get(reducerTask.getJobId());
         if(!taskExpire(job, reducerTask)){
-            LOG.info("reducer task " + reducerTask.getTaskId() + " failed on mapper task " +
+            LOG.debug("reducer task " + reducerTask.getTaskId() + " failed on mapper task " +
                      mapperTask.getTaskId() + " job " + reducerTask.getJobId());
             Task myTask = job.getTask(mapperTask.getTaskId());
             synchronized (myTask){
@@ -198,11 +199,30 @@ public class JobTracker {
         return help;
     }
 
+    public int getFileServerPort(){
+        return fileServerPort;
+    }
+
+    public String describeJobs(){
+        Collection<JobInfo> jobs = this.jobs.values();
+        List<JobInfo> jobList = new ArrayList<JobInfo>(jobs);
+        Collections.sort(jobList);
+        StringBuffer sb = new StringBuffer();
+        if(jobList.size() == 0){
+            sb.append("---No Jobs Here---\n");
+        }
+        for(JobInfo job : jobList){
+            sb.append(job.describeJob() + "\n");
+        }
+        return sb.toString();
+    }
+
     private void bindService()
             throws RemoteException {
         service = new JobTrackerServiceImpl(this);
         registry = LocateRegistry.getRegistry(registryHost, registryPort);
         registry.rebind(JobTrackerService.class.getCanonicalName(), service);
+        registry.rebind(JobClientService.class.getCanonicalName(), new JobClientServiceImpl(this));
     }
 
     private void startScheduler(){
@@ -418,6 +438,7 @@ public class JobTracker {
             throws Exception {
         JobTracker jobTracker = new JobTracker();
         JCommander commander = new JCommander(jobTracker, args);
+        commander.setProgramName("mapreduce-jobtracker");
         if(jobTracker.needHelp()){
             commander.usage();
         } else {

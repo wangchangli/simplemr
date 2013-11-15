@@ -174,6 +174,10 @@ public class TaskTracker {
         return tempDir;
     }
 
+    public Registry getRegistry(){
+        return registry;
+    }
+
     public boolean needHelp(){
         return help;
     }
@@ -201,6 +205,7 @@ public class TaskTracker {
     public static void main(String[] args) throws Exception {
         TaskTracker taskTracker = new TaskTracker();
         JCommander commander = new JCommander(taskTracker, args);
+        commander.setProgramName("mapreduce-tasktracker");
         if(taskTracker.needHelp()){
             commander.usage();
         } else {

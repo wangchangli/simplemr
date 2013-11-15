@@ -6,6 +6,7 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 public interface JobClientService extends Remote {
-    public String getFileServerInfo() throws RemoteException;
-    public void submitJob(JobConfig jobConfig) throws RemoteException;
+    public Pair<String, Integer> getFileServerInfo() throws RemoteException;
+    public boolean submitJob(JobConfig jobConfig) throws RemoteException;
+    public String describeJobs() throws RemoteException;
 }

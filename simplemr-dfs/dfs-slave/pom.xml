@@ -39,7 +39,7 @@
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>2.4</version>
                 <configuration>
-                    <outputDirectory>${project.root}/dist/lib</outputDirectory>
+                    <outputDirectory>${project.root}/dist/jars</outputDirectory>
                 </configuration>
             </plugin>
             <plugin>

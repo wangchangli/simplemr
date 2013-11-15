@@ -1,10 +1,14 @@
 package edu.cmu.courses.simplemr.mapreduce.jobtracker;
 
+import edu.cmu.courses.simplemr.Utils;
+import edu.cmu.courses.simplemr.mapreduce.JobClientService;
 import edu.cmu.courses.simplemr.mapreduce.JobConfig;
+import edu.cmu.courses.simplemr.mapreduce.Pair;
 import edu.cmu.courses.simplemr.mapreduce.task.MapperTask;
 import edu.cmu.courses.simplemr.mapreduce.task.ReducerTask;
 import edu.cmu.courses.simplemr.mapreduce.tasktracker.TaskTrackerInfo;
 
+import java.net.UnknownHostException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
@@ -16,16 +20,6 @@ public class JobTrackerServiceImpl extends UnicastRemoteObject implements JobTra
     public JobTrackerServiceImpl(JobTracker jobTracker) throws RemoteException {
         super();
         this.jobTracker = jobTracker;
-    }
-
-    @Override
-    public boolean submitJob(JobConfig jobConfig) throws RemoteException {
-        try {
-            jobTracker.submitJob(jobConfig);
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
     }
 
     @Override

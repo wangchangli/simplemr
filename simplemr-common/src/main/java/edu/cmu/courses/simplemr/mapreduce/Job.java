@@ -1,8 +1,10 @@
 package edu.cmu.courses.simplemr.mapreduce;
 
+import edu.cmu.courses.simplemr.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -13,25 +15,29 @@ public class Job {
 
     private String registryHost;
     private int registryPort;
-    private JobConfig jobConfig;
     private JobClientService jobClient;
 
-    public Job(String registryHost, int registryPort, JobConfig jobConfig){
-        this.jobConfig = jobConfig;
+    public Job(String registryHost, int registryPort){
         this.registryHost = registryHost;
         this.registryPort = registryPort;
     }
 
-    public void run(){
+    public void run(JobConfig jobConfig, Class<?> mapReduceClass){
         jobConfig.validate();
         try {
             Registry registry = LocateRegistry.getRegistry(registryHost, registryPort);
             jobClient = (JobClientService) registry.lookup(JobClientService.class.getCanonicalName());
-            jobClient.submitJob(jobConfig);
+            Pair<String, Integer> fileServerInfo = jobClient.getFileServerInfo();
+            Utils.postClassFile(fileServerInfo.getKey(), fileServerInfo.getValue(), mapReduceClass);
+            if(!jobClient.submitJob(jobConfig)){
+                LOG.error("job submit failed");
+            }
         } catch (RemoteException e) {
             LOG.error("failed to run mapreduce job", e);
         } catch (NotBoundException e) {
             LOG.error("the JobClientService is not bound in registry", e);
+        } catch (IOException e) {
+            LOG.error("failed to send class file to job tracker");
         }
     }
 }

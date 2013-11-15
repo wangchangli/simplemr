@@ -27,31 +27,31 @@ public class DFSMasterServiceImpl extends UnicastRemoteObject implements DFSMast
 
     @Override
     public DFSFile createFile(String fileName, int replicas) throws RemoteException {
-        LOG.info("create file " + fileName + ", replica number " + replicas);
+        LOG.debug("create file " + fileName + ", replica number " + replicas);
         return metaData.createFile(fileName, replicas, true);
     }
 
     @Override
     public DFSFile getFile(String fileName) throws RemoteException {
-        LOG.info("get file " + fileName);
+        LOG.debug("get file " + fileName);
         return metaData.getFile(fileName);
     }
 
     @Override
     public DFSFile[] listFiles() throws RemoteException {
-        LOG.info("list files");
+        LOG.debug("list files");
         return metaData.listFiles();
     }
 
     @Override
     public DFSChunk createChunk(long fileId, long offset, int size) throws RemoteException {
-        LOG.info("create chunk for file " + fileId + ", offset " + offset + ", size " + size);
+        LOG.debug("create chunk for file " + fileId + ", offset " + offset + ", size " + size);
         return metaData.createChunk(fileId, offset, size, true);
     }
 
     @Override
     public void deleteFile(long fileId) throws RemoteException {
-        LOG.info("delete file " + fileId);
+        LOG.debug("delete file " + fileId);
         metaData.deleteFile(fileId, true);
     }
 }

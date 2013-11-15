@@ -1,6 +1,6 @@
 #!/bin/bash
 
 base=`dirname $0`/..
-export CLASSPATH=$base/lib/*:$CLASSPATH
+export CLASSPATH=$base/lib/*:$base/jars/dfs-slave-1.0.jar:$CLASSPATH
 java edu.cmu.courses.simplemr.dfs.slave.DFSSlave $@
 

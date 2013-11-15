@@ -9,13 +9,14 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public class RemoteClassLoader extends ClassLoader {
-    public void loadRemoteClass(String host, int port, String className)
-            throws IOException {
+    public Class<?> loadRemoteClass(String host, int port, String className)
+            throws IOException, ClassNotFoundException {
         InputStream in = Utils.getRemoteFile(host, port, Constants.CLASS_FILE_URI + "/" + className);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         IOUtils.copy(in, out);
         byte[] classBytes = out.toByteArray();
-        defineClass(className, classBytes, 0, classBytes.length);
         out.close();
+        in.close();
+        return defineClass(className, classBytes, 0, classBytes.length);
     }
 }

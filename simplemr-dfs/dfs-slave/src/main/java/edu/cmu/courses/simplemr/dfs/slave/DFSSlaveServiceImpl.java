@@ -39,7 +39,7 @@ public class DFSSlaveServiceImpl extends UnicastRemoteObject implements DFSSlave
 
     @Override
     public void delete(long chunkId) throws RemoteException {
-        LOG.info("delete chunk " + chunkId);
+        LOG.debug("delete chunk " + chunkId);
         slave.delete(chunkId);
     }
 

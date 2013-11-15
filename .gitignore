@@ -4,6 +4,7 @@
 .classpath
 .project
 dist/lib/*
+dist/jars/*
 dist/bin/*.jar
 dist/doc
 target/*
