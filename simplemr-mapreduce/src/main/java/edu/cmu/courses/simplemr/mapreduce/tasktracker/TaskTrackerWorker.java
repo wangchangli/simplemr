@@ -37,7 +37,7 @@ public abstract class TaskTrackerWorker implements Runnable {
 
     protected Class<?> loadRemoteClass(){
         try{
-            Registry registry = taskTracker.getRegistry();
+            Registry registry = taskTracker.getJobTrackerRegistry();
             JobClientService service = (JobClientService)registry.lookup(JobClientService.class.getCanonicalName());
             Pair<String, Integer> fileServerInfo = service.getFileServerInfo();
             RemoteClassLoader classLoader = new RemoteClassLoader();

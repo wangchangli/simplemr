@@ -14,6 +14,7 @@ import java.util.TreeSet;
 
 public class TaskTrackerInfo implements Serializable{
     private String host;
+    private int registryPort;
     private int fileServerPort;
     private int mapperTaskNumber;
     private int reduceTaskNumber;
@@ -21,12 +22,13 @@ public class TaskTrackerInfo implements Serializable{
     private long invalidPeriod;
     private Set<Task> tasks;
 
-    public TaskTrackerInfo(String host, int port){
-        this(host, port, Constants.DEFAULT_HEARTBEAT_INVALID);
+    public TaskTrackerInfo(String host, int registryPort, int fileServerPort){
+        this(host, registryPort, fileServerPort, Constants.DEFAULT_HEARTBEAT_INVALID);
     }
 
-    public TaskTrackerInfo(String host, int fileServerPort, long invalidPeriod){
+    public TaskTrackerInfo(String host, int registryPort, int fileServerPort, long invalidPeriod){
         this.host = host;
+        this.registryPort = registryPort;
         this.fileServerPort = fileServerPort;
         this.mapperTaskNumber = 0;
         this.reduceTaskNumber = 0;
@@ -82,6 +84,10 @@ public class TaskTrackerInfo implements Serializable{
 
     public String getHost() {
         return host;
+    }
+
+    public int getRegistryPort(){
+        return registryPort;
     }
 
     public int getFileServerPort() {

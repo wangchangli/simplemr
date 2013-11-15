@@ -22,8 +22,8 @@ public class TaskTrackerMapperWorker extends TaskTrackerWorker{
 
     public TaskTrackerMapperWorker(Task task, TaskTracker taskTracker) {
         super(task, taskTracker);
-        reader = new DFSFileReader(taskTracker.getRegistryHost(),
-                                   taskTracker.getRegistryPort(),
+        reader = new DFSFileReader(taskTracker.getDfsMasterRegistryHost(),
+                                   taskTracker.getDfsMasterRegistryPort(),
                                    ((MapperTask)task).getInputFileBlock());
     }
 

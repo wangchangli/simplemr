@@ -189,7 +189,8 @@ public class TaskTrackerReducerWorker extends TaskTrackerWorker {
 
     private void saveResultToDFS(String localFile)
             throws Exception {
-        DFSClient dfsClient = new DFSClient(taskTracker.getRegistryHost(), taskTracker.getRegistryPort());
+        DFSClient dfsClient = new DFSClient(taskTracker.getDfsMasterRegistryHost(),
+                                            taskTracker.getDfsMasterRegistryPort());
         dfsClient.connect();
         dfsClient.writeText(localFile, ((ReducerTask)task).getReplicas(), ((ReducerTask)task).getLineCount());
     }
