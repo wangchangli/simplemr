@@ -48,7 +48,7 @@ public class DFSCatFile {
             int blockSize = 4096;
             byte[] data = null;
             while((data = dfsClient.readChunk(chunk, offset, blockSize)) != null){
-                System.out.println(new String(data));
+                System.out.print(new String(data));
                 offset += blockSize;
             }
         }
