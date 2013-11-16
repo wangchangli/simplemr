@@ -7,13 +7,13 @@ import java.util.Iterator;
 
 /**
  * The graph degree example.
- * count the out-degree and out-degree of every node
+ * count the out-degree and in-degree of every node
  * in a graph data.
  * Every line of input file describe a edge of the graph,
  * in the format:
  * "fromNodeNO. toNodeNO."
  * Output in the format:
- * "nodeNO. out-degree:xxx in-degree:xxx"
+ * "nodeNO.:xxx out-degree:xxx in-degree:xxx"
  *
  * @author Jian Fang(jianf)
  * @author Fangyu Gao(fangyug)
@@ -23,8 +23,10 @@ public class GraphDegree extends AbstractMapReduce {
     @Override
     public void map(String key, String value, OutputCollector collector) {
         String[] nodes = value.split("\\s+");
-        collector.collect(nodes[0], "out-degree");
-        collector.collect(nodes[1], "in-degree");
+        nodes[0] = String.format("%010d", Integer.parseInt(nodes[0]));
+        nodes[1] = String.format("%010d", Integer.parseInt(nodes[1]));
+        collector.collect(nodes[0], "o");
+        collector.collect(nodes[1], "i");
     }
 
     @Override
@@ -34,16 +36,16 @@ public class GraphDegree extends AbstractMapReduce {
         String  value;
         while(values.hasNext()){
             value = values.next();
-            if(value.equals("out-degree"))
+            if(value.equals("o"))
                 outCount++;
-            else if(value.equals("in-degree"))
+            else if(value.equals("i"))
                 inCount++;
             else {
                 System.out.print("Error Data");
                 return;
             }
         }
-        collector.collect(key, "out-degree:" + String.valueOf(outCount) +
+        collector.collect("nodeNO.:" + key, "out-degree:" + String.valueOf(outCount) +
                 " in-degree:" + String.valueOf(inCount));
     }
 
