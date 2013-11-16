@@ -104,7 +104,7 @@ reducer tasks. Please make sure your `registry` server is running on the same ma
 
 Now, the whole system is running, cheers!
 
-####The word count example
+####Examples
 
 The programming interface of SimpleMR is quite simple, you only need to extend the `AbstractMapReduce` class and
 implement the `map` and `reduce` function, here is an example of how to implement a word count MapReduce program by
@@ -143,7 +143,7 @@ SimpleMR:
 
 Before we actually start the job, we need to load the data to DFS by using this command:
 
-    $ dist/bin/dfs-load DATA_FILE
+    $ dist/bin/dfs-load dist/data/wordcount.txt
 
 You can check the DFS after above command finished:
 
@@ -152,7 +152,7 @@ You can check the DFS after above command finished:
 The `AbstractMapReduce` offers the command line argument parser, you can specifiy the MapReduce job options in the
 command line, we also offered you a start script:
 
-    $ dist/bin/examples-wordcount INPUT OUTPUT \
+    $ dist/bin/examples-wordcount wordcount.txt OUTPUT \
     -m MAPPER_NUMBER \
     -r REDUCER_NUMBER \
     -rh JOBTRACKER_REGISTRY_SERVER \
@@ -170,4 +170,19 @@ After successfully submiting the job, you can use `mapreduce-jobs` to see the jo
 
 Every job has 4 type of status: `INITIALIZING`, `PENDING`, `SUCCESS`, `FAILED`.
 
+We also offered another example `GraphDegree` - calculate the in-degree and out-degree of a graph. You can load the
+data file into DFS first
+
+    $ dist/bin/dfs-load dist/data/graphdegree.txt
+
+Then execute the job script:
+
+    $ dist/bin/examples-graphdegree graphdegree.txt OUTPUT \
+    -m MAPPER_NUMBER \
+    -r REDUCER_NUMBER \
+    -rh JOBTRACKER_REGISTRY_SERVER \
+    -rp JOBTRACKER_REGISTRY_PORT \
+    -n JOB_NAME
+
+Now you are on board, cheers!
 
