@@ -8,6 +8,9 @@ import java.util.Iterator;
 /**
  * The word count example.
  * Count the occurrence time of words.
+ * In put a line of file.
+ * Output in the format:
+ * "word number"
  *
  * @author Jian Fang(jianf)
  * @author Fangyu Gao(fangyug)

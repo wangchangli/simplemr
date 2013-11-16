@@ -10,7 +10,7 @@ import java.util.List;
 
 /**
  * The "dfs-load" operation in distributed file system.
- * Load a file from local file system sto DFS.
+ * Load a file from local file system to DFS.
  *
  * @author Jian Fang(jianf)
  * @author Fangyu Gao(fangyug)
