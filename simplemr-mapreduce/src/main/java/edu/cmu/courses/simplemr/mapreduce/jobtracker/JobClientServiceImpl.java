@@ -9,6 +9,14 @@ import java.net.UnknownHostException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
+/**
+ * Implementation of service class. The class contains a JobTracker
+ * instance that can assign tasks to task trackers.
+ *
+ * @author Jian Fang(jianf)
+ * @author Fangyu Gao(fangyug)
+ */
+
 public class JobClientServiceImpl extends UnicastRemoteObject implements JobClientService {
 
     private JobTracker jobTracker;

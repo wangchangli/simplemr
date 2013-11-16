@@ -22,6 +22,15 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * The DFS Slave class. DFS slaves are coordinated by a single
+ * DFS mater. The master decide what data store in which slave.
+ * And the slave can be read and write directly by user applications.
+ *
+ * @author Jian Fang(jianf)
+ * @author Fangyu Gao(fangyug)
+ */
+
 public class DFSSlave {
     @Parameter(names = {"-mh", "--master-registry-host"}, description = "The master registry host")
     private String masterRegistryHost = Constants.DEFAULT_REGISTRY_HOST;

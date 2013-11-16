@@ -26,6 +26,16 @@ import java.rmi.registry.Registry;
 import java.util.*;
 import java.util.concurrent.*;
 
+/**
+ * The Job Tracker class for assigning and coordinating map and reduce
+ * task trackers. Task trackers will inform the job tracker no matter
+ * its succeed or failed. Then the job tracker take following steps
+ * to get the whole jobs done.
+ *
+ * @author Jian Fang(jianf)
+ * @author Fangyu Gao(fangyug)
+ */
+
 public class JobTracker {
     private Logger LOG = LoggerFactory.getLogger(JobTracker.class);
 

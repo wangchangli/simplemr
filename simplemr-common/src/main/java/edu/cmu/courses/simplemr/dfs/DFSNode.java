@@ -4,6 +4,13 @@ import edu.cmu.courses.simplemr.Constants;
 
 import java.io.Serializable;
 
+/**
+ * The information of a node in distributed file system.
+ *
+ * @author Jian Fang(jianf)
+ * @author Fangyu Gao(fangyug)
+ */
+
 public class DFSNode implements Serializable, Comparable<DFSNode> {
     private String serviceName;
     private String registryHost;

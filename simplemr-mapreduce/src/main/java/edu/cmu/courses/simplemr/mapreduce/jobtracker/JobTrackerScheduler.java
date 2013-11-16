@@ -10,6 +10,13 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/**
+ * The job tracker scheduler start to dispatch the map tasks.
+ *
+ * @author Jian Fang(jianf)
+ * @author Fangyu Gao(fangyug)
+ */
+
 public class JobTrackerScheduler implements Runnable{
     private static Logger LOG = LoggerFactory.getLogger(JobTrackerScheduler.class);
 

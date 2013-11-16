@@ -8,6 +8,14 @@ import edu.cmu.courses.simplemr.dfs.DFSConstants;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A class for configuring MapReduce interface. Every client application
+ * inherent from this abstract class.
+ *
+ * @author Jian Fang(jianf)
+ * @author Fangyu Gao(fangyug)
+ */
+
 public abstract class AbstractMapReduce implements MapReduce {
     @Parameter(description = "InputFile OutputFile", required = true)
     protected List<String> files = new ArrayList<String>();

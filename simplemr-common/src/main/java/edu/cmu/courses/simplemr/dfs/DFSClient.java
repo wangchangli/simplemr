@@ -12,6 +12,13 @@ import java.rmi.registry.Registry;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * The Client side of distributed file system.
+ *
+ * @author Jian Fang(jianf)
+ * @author Fangyu Gao(fangyug)
+ */
+
 public class DFSClient {
     private static Logger LOG = LoggerFactory.getLogger(DFSClient.class);
 

@@ -5,6 +5,13 @@ import edu.cmu.courses.simplemr.dfs.DFSConstants;
 
 import java.io.Serializable;
 
+/**
+ * The configuration class of MapReduce.
+ *
+ * @author Jian Fang(jianf)
+ * @author Fangyu Gao(fangyug)
+ */
+
 public class JobConfig implements Serializable {
 
     private static final int DEFAULT_ATTEMPT_COUNT = 3;

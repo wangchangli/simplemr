@@ -9,8 +9,8 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 /**
- * The service interface that a Job tracker can provide to client to call
- * and task tracker to return. It extends the Remote interface to be called by RMI.
+ * The service interface that a Job tracker can provide to
+ * task tracker. It extends the Remote interface to be called by RMI.
  *
  * @author Jian Fang(jianf)
  * @author Fangyu Gao(fangyug)

@@ -12,6 +12,13 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
+/**
+ * Reclaim chunk that not going to use anymore.
+ *
+ * @author Jian Fang(jianf)
+ * @author Fangyu Gao(fangyug)
+ */
+
 public class DFSMasterGC implements Runnable{
     private static Logger LOG = LoggerFactory.getLogger(DFSMasterGC.class);
 
