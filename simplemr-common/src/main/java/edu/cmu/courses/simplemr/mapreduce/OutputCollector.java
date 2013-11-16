@@ -2,6 +2,14 @@ package edu.cmu.courses.simplemr.mapreduce;
 
 import java.util.*;
 
+/**
+ * The Output Collector is a input of user applications.
+ * User add a entry to the result by calling collect().
+ *
+ * @author Jian Fang(jianf)
+ * @author Fangyu Gao(fangyug)
+ */
+
 public class OutputCollector {
     private PriorityQueue<Pair<String, String>> collection;
     private Set<String> keys;

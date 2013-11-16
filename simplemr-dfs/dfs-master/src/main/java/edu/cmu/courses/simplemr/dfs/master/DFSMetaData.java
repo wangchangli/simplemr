@@ -17,6 +17,15 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/**
+ * The metadata in DFS master contains tables describing
+ * what DFS nodes are in order, the file index describing
+ * which nodes the file and its replicas are in.
+ *
+ * @author Jian Fang(jianf)
+ * @author Fangyu Gao(fangyug)
+ */
+
 public class DFSMetaData {
     private static Logger LOG = LoggerFactory.getLogger(DFSMetaData.class);
     private String lock;

@@ -7,7 +7,7 @@ import java.util.Iterator;
 
 /**
  * The graph degree example.
- * count the out-degree and in-degree of every node
+ * Count the out-degree and in-degree of every node
  * in a graph data.
  * Every line of input file describe a edge of the graph,
  * in the format:

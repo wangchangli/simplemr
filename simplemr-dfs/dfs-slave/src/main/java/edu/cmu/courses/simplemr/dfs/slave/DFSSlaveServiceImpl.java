@@ -8,6 +8,14 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
+/**
+ * Implementation of service class. The class contains a DFSSlave
+ * instance that handle data request from user.
+ *
+ * @author Jian Fang(jianf)
+ * @author Fangyu Gao(fangyug)
+ */
+
 public class DFSSlaveServiceImpl extends UnicastRemoteObject implements DFSSlaveService {
 
     private static Logger LOG = LoggerFactory.getLogger(DFSSlaveServiceImpl.class);

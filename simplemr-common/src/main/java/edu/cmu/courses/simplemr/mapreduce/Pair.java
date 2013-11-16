@@ -2,6 +2,14 @@ package edu.cmu.courses.simplemr.mapreduce;
 
 import java.io.Serializable;
 
+/**
+ * Self implemented Pair class that support template classes.
+ * In this project, we only support <String, String>
+ *
+ * @author Jian Fang(jianf)
+ * @author Fangyu Gao(fangyug)
+ */
+
 public class Pair<K, V> implements Serializable, Comparable<Pair> {
     private K key;
     private V value;

@@ -1,5 +1,13 @@
 package edu.cmu.courses.simplemr.mapreduce.jobtracker;
 
+/**
+ * The job tracker worker take charge in generating map and reduce
+ * tasks. And start task trackers by assigning map tasks.
+ *
+ * @author Jian Fang(jianf)
+ * @author Fangyu Gao(fangyug)
+ */
+
 public class JobTrackerWorker implements Runnable {
     private JobTracker jobTracker;
     private int jobId;

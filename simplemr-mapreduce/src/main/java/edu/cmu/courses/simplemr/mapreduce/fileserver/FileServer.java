@@ -9,6 +9,14 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.net.BindException;
 
+/**
+ * The HTTP server that handle with transforming intermediate
+ * files form mappers to reducers.
+ *
+ * @author Jian Fang(jianf)
+ * @author Fangyu Gao(fangyug)
+ */
+
 public class FileServer {
     private static Logger LOG = LoggerFactory.getLogger(FileServer.class);
 

@@ -17,6 +17,13 @@ import java.io.OutputStream;
 import java.net.URLConnection;
 import java.util.List;
 
+/**
+ * The handler of files that transform from mappers to reducers.
+ *
+ * @author Jian Fang(jianf)
+ * @author Fangyu Gao(fangyug)
+ */
+
 public class FileHandler extends HttpServlet {
     private String baseDir;
     private DiskFileItemFactory factory;

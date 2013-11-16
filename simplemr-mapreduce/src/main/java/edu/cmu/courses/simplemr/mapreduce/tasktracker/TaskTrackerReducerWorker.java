@@ -16,6 +16,17 @@ import java.io.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * The task worker to do the reduce work. The reducer keep
+ * track its partitions of files from every mapper. If all
+ * the files are being collected, the mapper will merge the
+ * files outside memory, and map it to the output directory
+ * in DFS.
+ *
+ * @author Jian Fang(jianf)
+ * @author Fangyu Gao(fangyug)
+ */
+
 public class TaskTrackerReducerWorker extends TaskTrackerWorker {
 
     public static final String MAPPER_RESULTS_DIR = "mappers";

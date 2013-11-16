@@ -4,6 +4,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Record each operation to the log file.
+ *
+ * @author Jian Fang(jianf)
+ * @author Fangyu Gao(fangyug)
+ */
+
 public class EditOperation{
     public static final byte UNKNOWN = 0x0;
     public static final byte UPDATE_DATA_NODE = 0x1;

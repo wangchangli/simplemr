@@ -12,6 +12,15 @@ import java.io.IOException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
+/**
+ * The DFS Master class. DFS master stores the metadata that
+ * user use to retrieve data in DFS nodes. The log of master is
+ * stored in logger, so the master can be recovered after dead.
+ *
+ * @author Jian Fang(jianf)
+ * @author Fangyu Gao(fangyug)
+ */
+
 public class DFSMaster {
     @Parameter(names = {"-rp", "--registry-port"}, description = "The port of registry service")
     private int registryPort = Constants.DEFAULT_REGISTRY_PORT;

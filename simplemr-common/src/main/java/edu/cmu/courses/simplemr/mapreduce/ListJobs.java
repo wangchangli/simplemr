@@ -9,6 +9,13 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
+/**
+ * List all the jobs.
+ *
+ * @author Jian Fang(jianf)
+ * @author Fangyu Gao(fangyug)
+ */
+
 public class ListJobs {
     @Parameter(names = {"-rh", "--registry-host"}, description = "the registry host")
     protected String registryHost = Constants.DEFAULT_REGISTRY_HOST;

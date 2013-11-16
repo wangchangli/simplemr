@@ -9,6 +9,14 @@ import org.slf4j.LoggerFactory;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
+/**
+ * Implementation of service class. The class contains a DFSMetaData
+ * instance that change according to the users requests.
+ *
+ * @author Jian Fang(jianf)
+ * @author Fangyu Gao(fangyug)
+ */
+
 public class DFSMasterServiceImpl extends UnicastRemoteObject implements DFSMasterService {
 
     private static Logger LOG = LoggerFactory.getLogger(DFSMasterServiceImpl.class);

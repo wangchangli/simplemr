@@ -11,6 +11,14 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
 
+/**
+ * The DFS slave periodically heart beat to DFS master
+ * to acclaim healthy.
+ *
+ * @author Jian Fang(jianf)
+ * @author Fangyu Gao(fangyug)
+ */
+
 public class DFSSlaveHeartbeatWorker implements Runnable {
 
     private static Logger LOG = LoggerFactory.getLogger(DFSSlaveHeartbeatWorker.class);

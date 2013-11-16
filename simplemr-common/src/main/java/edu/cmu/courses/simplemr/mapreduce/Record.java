@@ -1,5 +1,12 @@
 package edu.cmu.courses.simplemr.mapreduce;
 
+/**
+ * Record the key value pair of a statement.
+ *
+ * @author Jian Fang(jianf)
+ * @author Fangyu Gao(fangyug)
+ */
+
 public class Record implements Comparable<Record> {
     private String key;
     private String value;

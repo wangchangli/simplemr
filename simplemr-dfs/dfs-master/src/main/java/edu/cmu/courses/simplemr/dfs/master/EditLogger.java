@@ -7,6 +7,13 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 
+/**
+ * Record the log file of DFS master for failure recovery.
+ *
+ * @author Jian Fang(jianf)
+ * @author Fangyu Gao(fangyug)
+ */
+
 public class EditLogger {
     private String path;
     private ObjectWriter objectWriter;
