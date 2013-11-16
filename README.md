@@ -24,6 +24,10 @@ maven first. After successfully installing maven, you can build our project as b
 
 ####How to run
 
+Before you start, you should grant the execute permission of `dist/bin/*`:
+
+    $ chmod +x dist/bin/*
+
 The communication framework of our project is [Java RMI](http://en.wikipedia.org/wiki/RMI), so please make sure the
 `/usr/bin/rmiregistry` is executable in your machine. Here's the command to start Java RMI registry server:
 
@@ -139,23 +143,24 @@ SimpleMR:
 
 Before we actually start the job, we need to load the data to DFS by using this command:
 
-    $ dist/bin/dfs-load wordcount.txt
+    $ dist/bin/dfs-load DATA_FILE
 
 You can check the DFS after above command finished:
 
     $ dist/bin/dfs-ls
 
 The `AbstractMapReduce` offers the command line argument parser, you can specifiy the MapReduce job options in the
-command line:
+command line, we also offered you a start script:
 
-    $ java WordCount \
+    $ dist/bin/examples-wordcount INPUT OUTPUT \
     -m MAPPER_NUMBER \
     -r REDUCER_NUMBER \
     -rh JOBTRACKER_REGISTRY_SERVER \
     -rp JOBTRACKER_REGISTRY_PORT \
     -n JOB_NAME
 
-To see more options, please use `-h` or `--help`.
+**NOTE:** the `INPUT` file name should *not* contains any file path, just name, since our DFS don't support file folder.
+ To see more options, please use `-h` or `--help`.
 
 After successfully submiting the job, you can use `mapreduce-jobs` to see the job status:
 
