@@ -23,8 +23,8 @@ public class GraphDegree extends AbstractMapReduce {
     @Override
     public void map(String key, String value, OutputCollector collector) {
         String[] nodes = value.split("\\s+");
-        collector.collect(nodes[1], "out-degree");
-        collector.collect(nodes[2], "in-degree");
+        collector.collect(nodes[0], "out-degree");
+        collector.collect(nodes[1], "in-degree");
     }
 
     @Override
