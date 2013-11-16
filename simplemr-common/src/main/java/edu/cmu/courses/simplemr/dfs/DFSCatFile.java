@@ -38,6 +38,10 @@ public class DFSCatFile {
         DFSClient dfsClient = new DFSClient(registryHost, registryPort);
         dfsClient.connect();
         DFSFile file = dfsClient.getFile(fileNames.get(0));
+        if(file == null){
+            System.out.println("No such file");
+            return;
+        }
         DFSChunk[] chunks = file.getChunks();
         for(DFSChunk chunk : chunks){
             int offset = 0;
